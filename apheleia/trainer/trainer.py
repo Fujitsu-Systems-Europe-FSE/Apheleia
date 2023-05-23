@@ -1,9 +1,11 @@
+from apheleia.app import App
 from abc import ABC, abstractmethod
-from torch.utils.tensorboard import SummaryWriter
-from codecarbon import EmissionsTracker
-from apheleia.utils.error_handling import handle_exception
 from apheleia.utils.logger import ProjectLogger
+from torch.utils.tensorboard import SummaryWriter
 from apheleia.utils.wandb_writer import WandbWriter
+from apheleia.metrics.metric_store import MetricStore
+from apheleia.utils.error_handling import handle_exception
+from codecarbon import EmissionsTracker, OfflineEmissionsTracker
 
 import os
 import glob
@@ -11,8 +13,6 @@ import json
 import time
 import torch
 import torch.distributed as dist
-
-# from codecarbon import OfflineEmissionsTracker
 
 
 class TrainerException(Exception):
@@ -115,7 +115,7 @@ class Trainer(ABC):
         except Exception as e:
             ProjectLogger().error('Fatal error occurred during training. Checkpointing current epoch.')
             self.do_interrupt_backup()
-            handle_exception(e, self._opts.daemon)
+            handle_exception(e, self._opts.daemon, App().name)
 
     def _train(self, train_data, val_data, test_data):
         if self._tracker:
@@ -137,17 +137,16 @@ class Trainer(ABC):
                 ProjectLogger().info('Target metric has been reached.')
                 break
 
-            for batch_idx, batch in enumerate(train_data, start=1):
-                self.global_iter += 1
-                self._iteration(batch, batch_idx)
+            self._train_loop(train_data)
 
-            self._apply_schedule()
+            self._apply_schedules()
             if not self._opts.distributed or dist.get_rank() == 0:
-                if self._val_interval is not None and (self.current_epoch % self._val_interval == 0):
-                    self._validator.evaluate(val_data, 'Validation')
+                if self._validator is not None:
+                    if self._val_interval is not None and (self.current_epoch % self._val_interval == 0):
+                        self._validator.evaluate(val_data, 'Validation')
 
-                if self._test_interval is not None and (self.current_epoch % self._test_interval == 0):
-                    self._validator.evaluate(test_data, 'Test')
+                    if self._test_interval is not None and (self.current_epoch % self._test_interval == 0):
+                        self._validator.evaluate(test_data, 'Test')
 
             self._log_epoch()
             if not self._opts.distributed or dist.get_rank() == 0:
@@ -164,11 +163,11 @@ class Trainer(ABC):
             emissions = self._tracker.stop()
 
     @abstractmethod
-    def _iteration(self, batch, batch_idx, *args):
+    def _train_loop(self, *args, **kwargs):
         pass
 
-    def _apply_schedule(self):
-        if self._opts.lr_schedule is not None:
+    def _apply_schedules(self):
+        if self._opts.lr_schedules is not None:
             for scheduler_name, scheduler in self._scheduler.items():
                 scheduler.step()
                 if type(self.writer) == SummaryWriter:
@@ -206,6 +205,9 @@ class Trainer(ABC):
             _ = [os.remove(f) for f in files_to_drop]
 
     def _try_checkpoint(self):
+        if not hasattr(self._metrics_store, 'target'):
+            return
+
         target = self._metrics_store.target
         value = target.get()
         if type(value) == dict:
@@ -231,12 +233,9 @@ class Trainer(ABC):
             iter_stats = 'exec time: {:.2f} second(s) speed: {:.2f} samples/s'.format(b_time, speed)
             ProjectLogger().info('[Epoch {}] --[{}/{}]-- {}'.format(self.current_epoch, batch_idx, self.num_iter, iter_stats))
 
+    @abstractmethod
     def _report_graph(self):
-        if self.current_epoch == 1 and self.writer is not ...:
-            graph = self.get_graph()
-            x: torch.Tensor = torch.zeros((1, self._opts.num_features, *self._opts.im_size)).to(self._ctx[0])
-            self.writer.add_graph(graph, x)
-            self.writer.flush()
+        pass
 
     def _report_params(self):
         if self._report_interval > 0 and self.current_epoch % self._report_interval == 0:

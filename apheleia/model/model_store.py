@@ -41,3 +41,7 @@ class ModelStore(dict):
                 net = net.module
             nets.append(net)
         return nets
+
+    def extend(self, nets_list):
+        for net in nets_list:
+            self[net.model_name()] = net

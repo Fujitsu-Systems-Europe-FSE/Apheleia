@@ -1,5 +1,5 @@
-from abc import ABC
 from torch import nn
+from abc import ABC, abstractmethod
 from apheleia.utils.logger import ProjectLogger
 
 import torch
@@ -20,9 +20,11 @@ class NeuralNet(ABC, nn.Module):
         return [grad_means], [grad_stds], [np.arange(len(grad_stds))], [normalizers], ['stages']
 
     @staticmethod
+    @abstractmethod
     def model_name():
         pass
 
     @staticmethod
+    @abstractmethod
     def _weight_init(self):
         pass

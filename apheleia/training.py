@@ -1,5 +1,6 @@
-from apheleia import seed, ProjectLogger
 from apheleia.dataset import get_dataloader
+from apheleia.utils.initialization import seed
+from apheleia.utils.logger import ProjectLogger
 
 import os
 

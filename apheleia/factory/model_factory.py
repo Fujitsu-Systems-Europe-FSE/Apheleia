@@ -1,8 +1,9 @@
 from torch import nn
-from SegOOD.model import ModelStore
-from SegOOD.model.common import NeuralNet
-from SegOOD.pipeline import Factory, TRAINING_PIPELINES
-from SegOOD.utils.logger import ProjectLogger
+from apheleia.model import NeuralNet
+from apheleia.factory import Factory
+from apheleia.catalog import PipelinesCatalog
+from apheleia.utils.logger import ProjectLogger
+from apheleia.model.model_store import ModelStore
 
 
 class ModelFactory(Factory):
@@ -21,19 +22,26 @@ class ModelFactory(Factory):
         """
         # Models, optimizers and schedulers are stored in dict, because some models need their components to be handled separately (e.g. GANs, BiGANs, etc.)
         nets = ModelStore(self._opts)
-        nets['model'] = self._init_model()
+        nets.extend(self._init_models())
 
         self._parallelize_models(nets)
         self._load_weights(nets)
 
         return nets
 
-    def _init_model(self):
-        clazz = TRAINING_PIPELINES[self._family][self.model]['model']
-        net = clazz(self._opts)
-        assert isinstance(net, NeuralNet), f'{clazz.__class__} must inherit from NeuralNet class'
-        net.check_structure()
-        return net.to(self._ctx[0])
+    def _init_models(self):
+        models = PipelinesCatalog()[self._family][self._model]['models']
+        if type(models) != list:
+            models = [models]
+
+        nets = []
+        for model_clazz in models:
+            net = model_clazz(self._opts)
+            assert isinstance(net, NeuralNet), f'{model_clazz.__class__} must inherit from NeuralNet class'
+            net.check_structure()
+            nets.append(net.to(self._ctx[0]))
+
+        return nets
 
     def _parallelize_models(self, nets):
         if self._ctx[0].type != 'cpu':
