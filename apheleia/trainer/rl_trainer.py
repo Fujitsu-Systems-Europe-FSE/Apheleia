@@ -17,7 +17,7 @@ class RLTrainer(Trainer, ABC):
         pass
 
     @abstractmethod
-    def _optimize(self):
+    def _optimize(self, *args, **kwargs):
         pass
 
     @abstractmethod

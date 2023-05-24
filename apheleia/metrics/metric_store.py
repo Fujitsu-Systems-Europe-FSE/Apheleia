@@ -8,11 +8,14 @@ import math
 
 
 class MetricStore(metaclass=ABCMeta):
-    def __init__(self, opts, *args, **kwargs):
+    def __init__(self, opts, loss, *args, **kwargs):
         self._opts = opts
 
         self.train = dict()
         self.validation = dict()
+
+        for c in loss.components:
+            self.train[c] = [AverageMeter('')]
 
         self.best_tgt_metric = 0
         self.sink: SummaryWriter = ...
