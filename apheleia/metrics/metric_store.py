@@ -1,5 +1,6 @@
 from abc import ABCMeta
 from typing import List, Dict
+from apheleia.metrics import Meter
 from apheleia.utils.logger import ProjectLogger
 from torch.utils.tensorboard import SummaryWriter
 from apheleia.metrics.average_meter import AverageMeter
@@ -13,6 +14,7 @@ class MetricStore(metaclass=ABCMeta):
 
         self.train = dict()
         self.validation = dict()
+        self.test = dict()
 
         for c in loss.components:
             self.train[c] = [AverageMeter('')]
@@ -20,13 +22,23 @@ class MetricStore(metaclass=ABCMeta):
         self.best_tgt_metric = 0
         self.sink: SummaryWriter = ...
 
+    def add_train_metric(self, name, metric: Meter):
+        self.train[name] = [metric]
+
+    def add_val_metric(self, name, metric: Meter):
+        self.validation[name] = [metric]
+
+    def add_test_metric(self, name, metric: Meter):
+        self.test[name] = [metric]
+
     def flush(self, epoch):
-        for d in [self.train, self.validation]:
+        for d in [self.train, self.validation, self.test]:
             categories = {}
             for k, v in d.items():
                 category, metric = k.split('/')
                 if category not in categories:
                     categories[category] = {}
+
                 categories[category][metric] = v
 
             for k, v in categories.items():
@@ -44,23 +56,22 @@ class MetricStore(metaclass=ABCMeta):
 
     def _flush_category(self, epoch, category_name, metrics: Dict[str, List[AverageMeter]]):
         stdout = []
-        for name, meters in metrics.items():
+        for k, meters in metrics.items():
+            main_tag = f'{category_name}/{k}'
+            val = meters[0].get()
+            if meters[0].count == 0 or math.isnan(val):
+                continue
+
+            stdout.append(f'\t\t{k} = {val:.6f}')
+            if type(self.sink) == SummaryWriter:
+                self.sink.add_scalar(main_tag, val, epoch)
+                self.sink.flush()
             # Multi plots not working with WANDB
-            for i, meter in enumerate(meters):
-                k = name
-                if len(meters) > 1:
-                    suffix = ['Generation', 'Reconstruction'][i]
-                    k = f'{k}_{suffix}'
-
-                main_tag = f'{category_name}/{k}'
-                val = meter.get()
-                if meter.count == 0 or math.isnan(val):
-                    continue
-
-                stdout.append(f'\t\t{k} = {val:.6f}')
-                if type(self.sink) == SummaryWriter:
-                    self.sink.add_scalar(main_tag, val, epoch)
-                    self.sink.flush()
+            # if len(meters) > 1:
+            #     tag_scalar_dict = self._meters_to_dict(meters)
+            #     if type(self.sink) == SummaryWriter:
+            #         self.sink.add_scalars(main_tag, tag_scalar_dict, epoch)
+            #         self.sink.flush()
 
         self.sink.flush()
         if len(stdout) > 0:
@@ -89,6 +100,10 @@ class MetricStore(metaclass=ABCMeta):
     def update_validation(self, values):
         MetricStore.update_metrics(self.validation, values)
 
+    def update_test(self, values):
+        MetricStore.update_metrics(self.test, values)
+
     def reset(self):
         [[m.reset() for m in v] for v in self.train.values()]
         [[m.reset() for m in v] for v in self.validation.values()]
+        [[m.reset() for m in v] for v in self.test.values()]
