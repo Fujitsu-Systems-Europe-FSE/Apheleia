@@ -1,5 +1,5 @@
-torch==1.13.1
-torchvision==0.14.1
+torch
+torchvision
 daemonocle==1.2.3
 codecarbon==2.1.4
 wandb
