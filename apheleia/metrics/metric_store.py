@@ -3,7 +3,7 @@ from typing import List, Dict
 from apheleia.metrics import Meter
 from apheleia.utils.logger import ProjectLogger
 from torch.utils.tensorboard import SummaryWriter
-from apheleia.metrics.average_meter import AverageMeter
+from apheleia.metrics.meters import AverageMeter
 
 import math
 
