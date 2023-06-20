@@ -3,6 +3,28 @@ from apheleia.metrics import Meter
 import numpy as np
 
 
+class SumMeter(Meter):
+    def __init__(self, name, fmt=':f'):
+        self.name = name
+        self.fmt = fmt
+        self.reset()
+
+    def reset(self):
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.sum += val * n
+        self.count += n
+
+    def get(self):
+        return self.sum
+
+    def __str__(self):
+        fmtstr = '{name} {sum' + self.fmt + '} {count' + self.fmt + '}'
+        return fmtstr.format(**self.__dict__)
+
+
 class AverageMeter(Meter):
     """Computes and stores the average and current value"""
     def __init__(self, name, fmt=':f'):
