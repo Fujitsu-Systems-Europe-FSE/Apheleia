@@ -1,9 +1,8 @@
 from abc import ABCMeta
 from typing import List, Dict
-from apheleia.metrics import Meter
 from apheleia.utils.logger import ProjectLogger
 from torch.utils.tensorboard import SummaryWriter
-from apheleia.metrics.meters import AverageMeter
+from apheleia.metrics.meters import Meter, AverageMeter
 
 import math
 

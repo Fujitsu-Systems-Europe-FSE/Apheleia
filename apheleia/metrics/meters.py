@@ -1,7 +1,20 @@
-from apheleia.metrics import Meter
+from abc import ABC, abstractmethod
 
 import numpy as np
 
+
+class Meter(ABC):
+    @abstractmethod
+    def reset(self):
+        pass
+
+    @abstractmethod
+    def update(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def get(self):
+        pass
 
 class SumMeter(Meter):
     def __init__(self, name, fmt=':f'):
