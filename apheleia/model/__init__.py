@@ -8,6 +8,12 @@ import numpy as np
 
 class NeuralNet(ABC, nn.Module):
 
+    def __init__(self, opts, *args, **kwargs):
+        super().__init__()
+        self._opts = opts
+        self._build_structure()
+        self._weight_init()
+
     def check_structure(self):
         try:
             _ = torch.jit.script(self)
@@ -22,6 +28,10 @@ class NeuralNet(ABC, nn.Module):
     @staticmethod
     @abstractmethod
     def model_name():
+        pass
+
+    @abstractmethod
+    def _build_structure(self):
         pass
 
     @abstractmethod
