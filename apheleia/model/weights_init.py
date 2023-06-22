@@ -5,7 +5,7 @@ from functools import partial
 from torch import nn
 from torch.nn import init
 from torch.nn.modules.conv import _ConvNd
-from bibad.model.utils.act_utils import LRELU_SLOPE, PRELU_INIT_SLOPE
+from apheleia.utils.activation_fn import LRELU_SLOPE, PRELU_INIT_SLOPE
 
 
 def layer_init(layer, fn, params):
