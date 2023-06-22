@@ -24,7 +24,6 @@ class NeuralNet(ABC, nn.Module):
     def model_name():
         pass
 
-    @staticmethod
     @abstractmethod
     def _weight_init(self):
         pass
