@@ -190,9 +190,13 @@ class Trainer(ABC):
         out_filename = os.path.join(self._outchkpts, '{}-{:04d}'.format(self._opts.arch, self.current_epoch))
         self._save_checkpoints(out_filename)
 
-    @abstractmethod
     def _save_checkpoints(self, out_filename):
-        pass
+        save_dict = dict(epoch=self.current_epoch)
+        for netname in self._net.keys():
+            save_dict[f'{netname}_state'] = self._net[netname].state_dict()
+            save_dict[f'{netname}_optimizer_state'] = self._optimizer[netname].state_dict()
+
+        torch.save(save_dict, '{}.chpth'.format(out_filename))
 
     def _clean_checkpoints(self):
         chkpt_files = glob.glob(os.path.join(self._outchkpts, '*.chpth'))
