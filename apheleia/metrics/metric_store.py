@@ -18,8 +18,12 @@ class MetricStore(metaclass=ABCMeta):
         for c in loss.components:
             self.train[c] = [AverageMeter('')]
 
+        self.target = None
         self.best_tgt_metric = 0
         self.sink: SummaryWriter = ...
+
+    def add_target_metric(self, metric: Meter):
+        self.target = metric
 
     def add_train_metric(self, name, metric: Meter):
         self.train[name] = [metric]

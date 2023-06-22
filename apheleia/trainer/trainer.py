@@ -209,7 +209,7 @@ class Trainer(ABC):
             _ = [os.remove(f) for f in files_to_drop]
 
     def _try_checkpoint(self):
-        if not hasattr(self._metrics_store, 'target'):
+        if self._metrics_store is None:
             return
 
         target = self._metrics_store.target
