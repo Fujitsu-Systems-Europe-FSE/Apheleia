@@ -17,7 +17,7 @@ import torch.distributed as dist
 
 class App(metaclass=Singleton):
 
-    def __init__(self, name, with_dataset=True):
+    def __init__(self, name='', with_dataset=True):
         self.name = name
         self.cli = CommandLineParser(with_dataset)
         self._bootstrap_hooks = {}

@@ -79,17 +79,11 @@ class Trainer(ABC):
         with open(params_dump, 'w') as f:
             json.dump(vars(self._opts), f, indent=4, skipkeys=True, default=lambda x: str(x))
 
-    def _b_tick(self):
-        self._batch_tick = time.time()
-
     def _e_tick(self):
         self._epoch_tick = time.time()
 
     def _t_tick(self):
         self._start_time = time.time()
-
-    def _b_duration(self):
-        return time.time() - self._batch_tick
 
     def _e_duration(self):
         return time.time() - self._epoch_tick
@@ -230,12 +224,9 @@ class Trainer(ABC):
         ProjectLogger().info('[Epoch {}] exec time: {:.2f}'.format(self.current_epoch, self._e_duration()))
         self._metrics_store.flush(self.current_epoch)
 
-    def _log_iteration(self, batch_idx):
-        if self.global_iter % self._log_interval == 0:
-            b_time = self._b_duration()
-            speed = self._opts.batch_size / b_time
-            iter_stats = 'exec time: {:.2f} second(s) speed: {:.2f} samples/s'.format(b_time, speed)
-            ProjectLogger().info('[Epoch {}] --[{}/{}]-- {}'.format(self.current_epoch, batch_idx, self.num_iter, iter_stats))
+    @staticmethod
+    def _log_iteration(self, *args):
+        pass
 
     @abstractmethod
     def _report_graph(self):
