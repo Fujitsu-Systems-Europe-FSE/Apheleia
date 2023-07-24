@@ -15,20 +15,14 @@ class PipelinesCatalog(Catalog):
     def choices(self):
         valid_models = []
         for k1, v1 in self.items():
-            prefix = f'{k1}_' if len(k1) > 0 else k1
             for k2 in v1.keys():
-                valid_models.append(f'{prefix}{k2}')
+                valid_models.append(f'{k1}_{k2}')
         return valid_models
 
 
 class DatasetsCatalog(Catalog):
     def choices(self):
-        valid_datasets = []
-        for k1, v1 in self.items():
-            prefix = f'{k1}_' if len(k1) > 0 else k1
-            for k2 in v1.keys():
-                valid_datasets.append(f'{prefix}{k2}')
-        return valid_datasets
+        return self.keys()
 
 
 class LossesCatalog(Catalog):
