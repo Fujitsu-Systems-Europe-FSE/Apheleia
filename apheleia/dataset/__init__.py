@@ -25,7 +25,7 @@ def get_dataset(dataset_class, dataset_type, path, args):
 
     # dat = dataset_class(path, **{'transform': transforms.Compose(trans)})
     # return dat, dataset_type
-    return dataset_class(path)
+    return dataset_class(args, path)
 
 
 def get_dataloader(dataset_class, dataset_type, path, batch_size, workers, args, dataset_fn=get_dataset, collate_fn=None):
