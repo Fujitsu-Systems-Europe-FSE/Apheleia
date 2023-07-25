@@ -131,20 +131,9 @@ class Trainer(ABC):
                 ProjectLogger().info('Target metric has been reached.')
                 break
 
+            self._pre_loop_hook()
             self._train_loop(train_data)
-
-            self._apply_schedules()
-            if not self._opts.distributed or dist.get_rank() == 0:
-                if self._validator is not None:
-                    if self._val_interval is not None and (self.current_epoch % self._val_interval == 0):
-                        self._validator.evaluate(val_data, 'Validation')
-
-                    if self._test_interval is not None and (self.current_epoch % self._test_interval == 0):
-                        self._validator.evaluate(test_data, 'Test')
-
-            self._log_epoch()
-            if not self._opts.distributed or dist.get_rank() == 0:
-                self._try_checkpoint()
+            self._post_loop_hook(val_data, test_data)
 
         if not self._opts.distributed or dist.get_rank() == 0:
             ProjectLogger().info('Checkpointing model...')
@@ -158,6 +147,12 @@ class Trainer(ABC):
 
     @abstractmethod
     def _train_loop(self, *args, **kwargs):
+        pass
+
+    def _pre_loop_hook(self, *args):
+        pass
+
+    def _post_loop_hook(self, *args):
         pass
 
     def _apply_schedules(self):
@@ -203,7 +198,7 @@ class Trainer(ABC):
             _ = [os.remove(f) for f in files_to_drop]
 
     def _try_checkpoint(self):
-        if self._metrics_store is None:
+        if (self._opts.distributed and dist.get_rank() > 0) or self._metrics_store is None:
             return
 
         target = self._metrics_store.target

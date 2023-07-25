@@ -4,6 +4,7 @@ from apheleia.trainer.trainer import Trainer
 from apheleia.utils.logger import ProjectLogger
 
 import torch
+import torch.distributed as dist
 
 
 class DLTrainer(Trainer, ABC):
@@ -36,3 +37,16 @@ class DLTrainer(Trainer, ABC):
         for batch_idx, batch in enumerate(train_data, start=1):
             self.global_iter += 1
             self._iteration(batch, batch_idx)
+
+    def _post_loop_hook(self, val_data, test_data, *args):
+        self._apply_schedules()
+        if not self._opts.distributed or dist.get_rank() == 0:
+            if self._validator is not None:
+                if self._val_interval is not None and (self.current_epoch % self._val_interval == 0):
+                    self._validator.evaluate(val_data, 'Validation')
+
+                if self._test_interval is not None and (self.current_epoch % self._test_interval == 0):
+                    self._validator.evaluate(test_data, 'Test')
+
+        self._log_epoch()
+        self._try_checkpoint()
