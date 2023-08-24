@@ -131,7 +131,7 @@ class Trainer(ABC):
                 ProjectLogger().info('Target metric has been reached.')
                 break
 
-            self._pre_loop_hook()
+            self._pre_loop_hook(train_data)
             self._train_loop(train_data)
             self._post_loop_hook(val_data, test_data)
 

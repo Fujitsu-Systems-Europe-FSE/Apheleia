@@ -18,13 +18,13 @@ class RLTrainer(Trainer, ABC):
         pass
 
     def _post_loop_hook(self, val_data, test_data, *args):
-        self._log_epoch()
+        if self.global_iter % self._opts.log_interval == 0:
+            self._log_epoch()
         self._try_checkpoint()
 
     def _log_epoch(self):
-        if self.global_iter % self._opts.log_interval == 0:
-            ProjectLogger().info('[Step {}] exec time: {:.2f}'.format(self.global_iter, self._e_duration()))
-            self._metrics_store.flush(self.global_iter)
+        ProjectLogger().info('[Step {}] exec time: {:.2f}'.format(self.global_iter, self._e_duration()))
+        self._metrics_store.flush(self.global_iter)
 
     @abstractmethod
     def _optimize(self, *args, **kwargs):
