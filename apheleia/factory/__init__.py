@@ -11,7 +11,11 @@ class Factory(ABC):
     def __init__(self, opts, ctx) -> None:
         self._opts = opts
         self._ctx = ctx
-        self._family, self._model = opts.arch.split('_', 1)
+
+        self._namespace = ''
+        self._model = opts.arch
+        if '_' in opts.arch:
+            self._namespace, self._model = opts.arch.split('_', 1)
         self._save = torch.load(os.path.expanduser(self._opts.models), map_location=torch.device('cpu')) if self._opts.models else None
 
     @abstractmethod

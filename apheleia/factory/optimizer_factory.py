@@ -34,7 +34,7 @@ class OptimizerFactory(Factory):
 
     def _init_optimizers(self, names, params):
         optimizers = {}
-        optims = PipelinesCatalog()[self._family][self._model]['optimizers']
+        optims = PipelinesCatalog()[self._namespace][self._model]['optimizers']
         # CLI override
         if hasattr(self._opts, 'optimizers') and self._opts.optimizers is not None:
             optims = self._opts.optimizers

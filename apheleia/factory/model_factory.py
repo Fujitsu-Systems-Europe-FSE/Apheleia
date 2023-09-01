@@ -30,7 +30,7 @@ class ModelFactory(Factory):
         return nets
 
     def _init_models(self):
-        models = PipelinesCatalog()[self._family][self._model]['models']
+        models = PipelinesCatalog()[self._namespace][self._model]['models']
         if type(models) != list:
             models = [models]
 
