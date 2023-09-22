@@ -5,7 +5,7 @@ from abc import ABCMeta, abstractmethod
 class AbstractDataset(Dataset, metaclass=ABCMeta):
 
     def __init__(self, *args, **kwargs):
-        super().__init__()
+        super().__init__(*args, **kwargs)
 
     @abstractmethod
     def num_features(self):
@@ -13,8 +13,7 @@ class AbstractDataset(Dataset, metaclass=ABCMeta):
 
 
 class ImageDataset(AbstractDataset):
-    def num_features(self):
-        pass
+    pass
 
 
 class VectorDataset(AbstractDataset):

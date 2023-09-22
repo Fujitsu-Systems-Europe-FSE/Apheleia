@@ -12,23 +12,25 @@ def build_sampler(args, dataset):
 
 def build_dataset(dataset_class, path, args):
     trans = []
-    if type(dataset_class) == ImageDataset:
-        args.means = [0.485, 0.456, 0.406] if 'means' not in args or args.means is None else args.means
-        args.stds = [0.229, 0.224, 0.225] if 'stds' not in args or args.stds is None else args.stds
+    if issubclass(dataset_class, ImageDataset):
+        if not hasattr(args, 'means') or not hasattr(args, 'stds') or args.means is None or args.stds is None:
+            args.means = [0.485, 0.456, 0.406]
+            args.stds = [0.229, 0.224, 0.225]
+            ProjectLogger().warning('Using ImageNet dataset standardization.')
 
-        if args.im_size is not None:
+        if hasattr(args, 'im_size'):
             args.im_size = args.im_size if isinstance(args.im_size, tuple) else (args.im_size, args.im_size)
             w, h = args.im_size
             trans = [transforms.Resize((h, w))]
+        else:
+            ProjectLogger().warning('Dataset won\'t be resizable : Missing --im-size on cli parser.')
 
         trans += [
             transforms.ToTensor(),  # range [0;1]
             transforms.Normalize(args.means, args.stds)
         ]
 
-    # dat = dataset_class(path, **{'transform': transforms.Compose(trans)})
-
-    return dataset_class(args, path)
+    return dataset_class(args, path, transform=transforms.Compose(trans))
 
 
 def build_dataloader(dataset_class, path, batch_size, workers, args, dataset_factory_fn=build_dataset, sampler_fn=build_sampler, collate_fn=None):
