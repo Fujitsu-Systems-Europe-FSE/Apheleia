@@ -96,6 +96,8 @@ class Trainer(ABC):
         self._t_tick()
 
         for k in self._net.keys():
+            n_params = sum([p.numel() for p in self._net[k].parameters() if p.requires_grad])
+            ProjectLogger().info(f'{k} model size : {n_params:,} parameters')
             ProjectLogger().info(self._net.get_raw(k))
 
         try:
