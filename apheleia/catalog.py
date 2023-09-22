@@ -1,8 +1,9 @@
 from torch import optim
 from apheleia.model.losses import Loss
 from apheleia.utils.patterns import Singleton
+from torch.optim import lr_scheduler, Optimizer
+from torch.optim.lr_scheduler import LRScheduler
 from apheleia.dataset.abstract_dataset import AbstractDataset
-from torch.optim.lr_scheduler import ExponentialLR, StepLR, PolynomialLR, LRScheduler
 
 
 class Catalog(dict, metaclass=Singleton):
@@ -26,6 +27,8 @@ class DatasetsCatalog(Catalog):
         return DatasetsCatalog()[namespace][element]
 
     def __setitem__(self, namespace, value_dict):
+        # first dictionary element is class. Other key might be metadata.
+        # should we use ordereddict to guarantee it ?
         assert issubclass(list(value_dict.values())[0], AbstractDataset)
         super().__setitem__(namespace, value_dict)
 
@@ -45,11 +48,12 @@ class LossesCatalog(Catalog):
 class OptimizersCatalog(Catalog):
     def __init__(self):
         super().__init__()
-        optims = {k.lower(): v for k, v in optim.__dict__.items() if isinstance(v, type) and issubclass(v, optim.Optimizer)}
+        optims = {k.lower(): v for k, v in optim.__dict__.items() if isinstance(v, type) and issubclass(v, Optimizer)}
+        del optims['optimizer']
         self.update(optims)
 
     def __setitem__(self, namespace, value_dict):
-        assert issubclass(list(value_dict.values())[0], optim.Optimizer)
+        assert issubclass(list(value_dict.values())[0], Optimizer)
         super().__setitem__(namespace, value_dict)
 
     def choices(self):
@@ -59,13 +63,14 @@ class OptimizersCatalog(Catalog):
 class SchedulesCatalog(Catalog):
     def __init__(self):
         super().__init__()
-        self['exp'] = ExponentialLR
-        self['step'] = StepLR
-        self['poly'] = PolynomialLR
+        schedulers = {k.lower(): v for k, v in lr_scheduler.__dict__.items() if isinstance(v, type) and issubclass(v, LRScheduler)}
+        del schedulers['lrscheduler']
+        del schedulers['_lrscheduler']
+        self.update(schedulers)
 
-    def __setitem__(self, namespace, value):
-        assert issubclass(value, LRScheduler)
-        super().__setitem__(namespace, value)
+    def __setitem__(self, namespace, value_dict):
+        assert issubclass(list(value_dict.values())[0], LRScheduler)
+        super().__setitem__(namespace, value_dict)
 
     def choices(self):
         return self.keys()
