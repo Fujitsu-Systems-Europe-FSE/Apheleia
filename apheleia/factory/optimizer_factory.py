@@ -73,7 +73,7 @@ class OptimizerFactory(Factory):
         for i, lr_schedule in enumerate(self._opts.lr_schedules):
             ProjectLogger().info(f'{lr_schedule.upper()} will be used as scheduler with {names[i]}.')
 
-            args, kwargs = OptimizerFactory.build_args(self._opts.schedules_params[i], i)
+            args, kwargs = OptimizerFactory.build_args(self._opts.schedules_params, i)
             clazz = SchedulesCatalog()[lr_schedule]
             try:
                 schedules[names[i]] = clazz(optimizers[i], *args, **kwargs)
