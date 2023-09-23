@@ -1,4 +1,5 @@
 from apheleia.factory import Factory
+from torch_ema import ExponentialMovingAverage
 from apheleia.utils.logger import ProjectLogger
 from apheleia.catalog import OptimizersCatalog, PipelinesCatalog, SchedulesCatalog
 
@@ -32,6 +33,19 @@ class OptimizerFactory(Factory):
 
         return args, kwargs
 
+    def _init_ema(self, names, params):
+        ema = {}
+        model_pipeline = PipelinesCatalog()[self._namespace][self._model]
+        if 'ema' in model_pipeline:
+            with_ema = model_pipeline['ema']
+            ema_decay = self._opts.ema_decay if hasattr(self._opts, 'ema_decay') and self._opts.ema_decay is not None else 0.999
+
+            for i, enabled in enumerate(with_ema):
+                if enabled:
+                    ema[names[i]] = ExponentialMovingAverage(params[i], decay=ema_decay)
+
+        return ema
+
     def _init_optimizers(self, names, params):
         optimizers = {}
         optims = PipelinesCatalog()[self._namespace][self._model]['optimizers']
@@ -39,6 +53,7 @@ class OptimizerFactory(Factory):
         if hasattr(self._opts, 'optimizers') and self._opts.optimizers is not None:
             optims = self._opts.optimizers
 
+        # Still possible ? Could be removed probably
         if type(optims) != list:
             optims = [optims]
 
@@ -46,7 +61,6 @@ class OptimizerFactory(Factory):
         if len(optims) == 1:
             params = [list(itertools.chain(*params))]
 
-        # for i, recommended_optim_name in enumerate(optims):
         for j, model_name in enumerate(names):
             reused = j >= len(optims)
             index = 0 if reused else j
@@ -83,7 +97,7 @@ class OptimizerFactory(Factory):
 
         return schedules
 
-    def _load_states(self, optims):
+    def _load_states(self, optims, ema):
         if self._save:
             for k, v in optims.items():
                 key = f'{k}_optimizer_state'
@@ -92,12 +106,17 @@ class OptimizerFactory(Factory):
                 else:
                     ProjectLogger().warning(f'"{k}" not found in checkpoint file')
 
+            for k, v in ema.items():
+                key = f'{k}_ema_state'
+                if key in self._save:
+                    v.load_state_dict(self._save[key])
+
     def build(self, nets):
         net_names = list(nets.keys())
         optimizers = self._init_optimizers(net_names, [v.parameters() for v in nets.values()])
         schedulers = self._init_schedulers(net_names, [v for v in optimizers.values()])
-        # schedulers = {k: self._init_scheduler(v) for k, v in optimizers.items()}
+        ema = self._init_ema(net_names, [v.parameters() for v in nets.values()])
 
-        self._load_states(optimizers)
+        self._load_states(optimizers, ema)
 
-        return optimizers, schedulers
+        return optimizers, schedulers, ema

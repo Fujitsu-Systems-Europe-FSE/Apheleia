@@ -44,9 +44,9 @@ class TrainingPipelineFactory(Factory):
         validator = PipelinesCatalog()[self._namespace][self._model]['validator']
         return validator(self._opts, net, metrics, self._ctx)
 
-    def _init_trainer(self, nets, optimizers, schedulers, loss, validator, metrics):
+    def _init_trainer(self, nets, optimizers, schedulers, ema, loss, validator, metrics):
         trainer = PipelinesCatalog()[self._namespace][self._model]['trainer']
-        return trainer(self._opts, nets, optimizers, schedulers, loss, validator, metrics, self._ctx)
+        return trainer(self._opts, nets, optimizers, schedulers, ema, loss, validator, metrics, self._ctx)
 
     def build(self, with_loss=True):
         loss = self._init_loss() if with_loss else None
@@ -54,8 +54,8 @@ class TrainingPipelineFactory(Factory):
 
         nets = self._model_factory.build()
         validator = self._init_validator(nets, metrics) if 'validator' in PipelinesCatalog()[self._namespace][self._model] else None
-        optimizers, schedulers = self._optim_factory.build(nets)
+        optimizers, schedulers, ema = self._optim_factory.build(nets)
 
-        trainer = self._init_trainer(nets, optimizers, schedulers, loss, validator, metrics)
+        trainer = self._init_trainer(nets, optimizers, schedulers, ema, loss, validator, metrics)
 
         return trainer

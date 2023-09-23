@@ -6,8 +6,8 @@ from apheleia.metrics.metric_store import MetricStore
 
 class RLTrainer(Trainer, ABC):
 
-    def __init__(self, opts, net, optims, scheds, loss, validator, metrics: MetricStore, ctx, model_name, *args, **kwargs):
-        super().__init__(opts, net, optims, scheds, loss, validator, metrics, ctx, model_name, *args, **kwargs)
+    def __init__(self, opts, net, optims, scheds, ema, loss, validator, metrics: MetricStore, ctx, model_name, *args, **kwargs):
+        super().__init__(opts, net, optims, scheds, ema, loss, validator, metrics, ctx, model_name, *args, **kwargs)
         self._environment = opts.env
 
     def _report_graph(self):

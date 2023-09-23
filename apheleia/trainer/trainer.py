@@ -21,7 +21,7 @@ class TrainerException(Exception):
 
 class Trainer(ABC):
 
-    def __init__(self, opts, net, optims, scheds, loss, validator, metrics: MetricStore, ctx, model_name, *args, **kwargs):
+    def __init__(self, opts, net, optims, scheds, ema, loss, validator, metrics: MetricStore, ctx, model_name, *args, **kwargs):
         self._opts = opts
         self._ctx = ctx
         self._net = net
@@ -29,6 +29,7 @@ class Trainer(ABC):
         self._model_name = model_name
         self._optimizer = optims
         self._scheduler = scheds
+        self._ema = ema
         self._validator = validator
         self._metrics_store = metrics
 
@@ -184,6 +185,8 @@ class Trainer(ABC):
     def _save_checkpoints(self, out_filename):
         save_dict = dict(epoch=self.current_epoch)
         for netname in self._net.keys():
+            if netname in self._ema:
+                save_dict[f'{netname}_ema_state'] = self._ema[netname].state_dict()
             save_dict[f'{netname}_state'] = self._net[netname].state_dict()
             save_dict[f'{netname}_optimizer_state'] = self._optimizer[netname].state_dict()
 
