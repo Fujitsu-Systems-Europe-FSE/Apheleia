@@ -1,8 +1,8 @@
 from torch.utils import data
-from apheleia import ProjectLogger
 from torchvision import transforms
+from apheleia import ProjectLogger
 from torch.utils.data import DistributedSampler
-from .abstract_dataset import ImageDataset
+from apheleia.dataset.abstract_dataset import ImageDataset
 
 
 def build_sampler(args, dataset):
@@ -10,7 +10,7 @@ def build_sampler(args, dataset):
     return sampler
 
 
-def build_dataset(dataset_class, path, args):
+def build_dataset(dataset_class, path, args, additional_transforms=None):
     trans = []
     if issubclass(dataset_class, ImageDataset):
         if not hasattr(args, 'means') or not hasattr(args, 'stds') or args.means is None or args.stds is None:
@@ -30,11 +30,25 @@ def build_dataset(dataset_class, path, args):
             transforms.Normalize(args.means, args.stds)
         ]
 
-    return dataset_class(args, path, transform=transforms.Compose(trans))
+    return dataset_class(args, path, transform=transforms.Compose(trans + additional_transforms))
 
 
-def build_dataloader(dataset_class, path, batch_size, workers, args, dataset_factory_fn=build_dataset, sampler_fn=build_sampler, collate_fn=None):
-    dataset = dataset_factory_fn(dataset_class, path, args)
+def build_dataloader(dataset_class, path, batch_size, workers, args, dataset_factory_fn=build_dataset,
+                     sampler_fn=build_sampler, collate_fn=None, additional_transforms=None):
+    """
+    Build a dataloader
+    :param dataset_class:
+    :param path:
+    :param batch_size:
+    :param workers:
+    :param args:
+    :param dataset_factory_fn:
+    :param sampler_fn:
+    :param collate_fn:
+    :param additional_transforms:
+    :return:
+    """
+    dataset = dataset_factory_fn(dataset_class, path, args, additional_transforms)
     sampler = sampler_fn(args, dataset)
     opts = {
         'batch_size': batch_size,
@@ -50,3 +64,28 @@ def build_dataloader(dataset_class, path, batch_size, workers, args, dataset_fac
         ProjectLogger().warning('DataLoader workers are not seeded.')
 
     return data.DataLoader(dataset, **opts)
+
+
+def build_dataloaders(opts, dataset_clazz, **kwargs):
+    """
+    Build all three (train/val/test) dataloaders
+    :param opts:
+    :param kwargs:
+    :return:
+    """
+    train_data = build_dataloader(dataset_clazz, opts.dataset, opts.batch_size, opts.workers, opts, **kwargs)
+
+    val_data = train_data
+    if opts.val_dataset is not None:
+        val_data = build_dataloader(opts.dataset_type, opts.dataset_class, opts.val_dataset, opts.batch_size, opts.workers, opts, **kwargs)
+    else:
+        ProjectLogger().warning('Train dataset will be reused for validation.')
+
+    test_data = None
+    if hasattr(opts, 'test_dataset') and opts.test_dataset is not None:
+        test_data = build_dataloader(opts.dataset_type, opts.dataset_class, opts.test_dataset, opts.batch_size, opts.workers, opts, **kwargs)
+    else:
+        opts.test_interval = None
+        ProjectLogger().warning('Test eval disabled.')
+
+    return train_data, val_data, test_data
