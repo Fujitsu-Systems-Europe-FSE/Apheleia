@@ -10,9 +10,6 @@ class RLTrainer(Trainer, ABC):
         super().__init__(opts, net, optims, scheds, ema, loss, validator, metrics, ctx, model_name, *args, **kwargs)
         self._environment = opts.env
 
-    def _report_graph(self):
-        pass
-
     @abstractmethod
     def _train_loop(self, *args, **kwargs):
         pass

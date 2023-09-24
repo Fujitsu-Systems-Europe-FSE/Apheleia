@@ -118,6 +118,8 @@ class Trainer(ABC):
         if self._tracker:
             self._tracker.start()
 
+        self._report_graph()
+
         for self.current_epoch in range(self._start_epoch, self._epochs + 1):
             if self._opts.distributed:
                 # let all processes sync up before starting with a new epoch of training
@@ -126,7 +128,6 @@ class Trainer(ABC):
             self._e_tick()
             self._metrics_store.reset()
 
-            self._report_graph()
             self._report_params()
             # self._start_profiler(epoch)
 
@@ -228,9 +229,19 @@ class Trainer(ABC):
     def _log_iteration(self, *args):
         pass
 
-    @abstractmethod
     def _report_graph(self):
-        pass
+        if self.writer is not ...:
+            graph = self.get_graph()
+            inputs = self.get_dummmy_inputs()
+
+            if graph is None or inputs is None:
+                return
+
+            # tensorboard needs graph to be on cpu
+            graph.to(torch.device('cpu'))
+            self.writer.add_graph(graph, inputs)
+            graph.to(self._ctx[0])
+            self.writer.flush()
 
     def _report_params(self):
         if self._report_interval > 0 and self.current_epoch % self._report_interval == 0:
@@ -255,6 +266,10 @@ class Trainer(ABC):
 
     @abstractmethod
     def get_graph(self) -> torch.nn.Module:
+        pass
+
+    @abstractmethod
+    def get_dummmy_inputs(self) -> list[torch.Tensor]:
         pass
 
     def get_params(self, netname):
