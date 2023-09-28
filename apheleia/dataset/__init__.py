@@ -79,13 +79,13 @@ def build_dataloaders(opts, dataset_clazz, **kwargs):
 
     val_data = train_data
     if opts.val_dataset is not None:
-        val_data = build_dataloader(opts.dataset_type, opts.dataset_class, opts.val_dataset, opts.batch_size, opts.workers, opts, **kwargs)
+        val_data = build_dataloader(dataset_clazz, opts.val_dataset, opts.batch_size, opts.workers, opts, **kwargs)
     else:
         ProjectLogger().warning('Train dataset will be reused for validation.')
 
     test_data = None
     if hasattr(opts, 'test_dataset') and opts.test_dataset is not None:
-        test_data = build_dataloader(opts.dataset_type, opts.dataset_class, opts.test_dataset, opts.batch_size, opts.workers, opts, **kwargs)
+        test_data = build_dataloader(dataset_clazz, opts.test_dataset, opts.batch_size, opts.workers, opts, **kwargs)
     else:
         opts.test_interval = None
         ProjectLogger().warning('Test eval disabled.')
