@@ -21,7 +21,7 @@ class TrainerException(Exception):
 
 class Trainer(ABC):
 
-    def __init__(self, opts, net, optims, scheds, ema, loss, validator, metrics: MetricStore, ctx, model_name, *args, **kwargs):
+    def __init__(self, model_name, opts, net, optims, scheds, ema, loss, validator, metrics: MetricStore, ctx):
         self._opts = opts
         self._ctx = ctx
         self._net = net

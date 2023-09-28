@@ -1,14 +1,13 @@
 from abc import ABC, abstractmethod
 from apheleia.trainer.trainer import Trainer
 from apheleia.utils.logger import ProjectLogger
-from apheleia.metrics.metric_store import MetricStore
 
 
 class RLTrainer(Trainer, ABC):
 
-    def __init__(self, opts, net, optims, scheds, ema, loss, validator, metrics: MetricStore, ctx, model_name, *args, **kwargs):
-        super().__init__(opts, net, optims, scheds, ema, loss, validator, metrics, ctx, model_name, *args, **kwargs)
-        self._environment = opts.env
+    def __init__(self, *args):
+        super().__init__(*args)
+        self._environment = self._opts.env
 
     @abstractmethod
     def _train_loop(self, *args, **kwargs):
