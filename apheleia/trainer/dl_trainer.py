@@ -31,7 +31,6 @@ class DLTrainer(Trainer, ABC):
             self._iteration(batch, batch_idx)
 
     def _post_loop_hook(self, val_data, test_data, *args):
-        self._apply_schedules()
         if not self._opts.distributed or dist.get_rank() == 0:
             if self._validator is not None:
                 if self._val_interval is not None and (self.current_epoch % self._val_interval == 0):

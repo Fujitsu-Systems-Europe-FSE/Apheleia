@@ -56,7 +56,7 @@ class Trainer(ABC):
         self.current_epoch: int = ...
         self.num_iter: int = ...
         self.global_iter: int = 0
-        self.global_tick: int = 0
+        # self.global_tick: int = 0
 
         self._outdir = self._opts.outdir
         self._outlogs = os.path.join(self._outdir, 'logs_{}'.format(self._model_name))
@@ -100,6 +100,10 @@ class Trainer(ABC):
             n_params = sum([p.numel() for p in self._net[k].parameters() if p.requires_grad])
             ProjectLogger().info(f'{k} model size : {n_params:,} parameters')
             ProjectLogger().info(self._net.get_raw(k))
+
+        if self._opts.num_accum > 1:
+            info = f'{self._opts.batch_size} x {self._opts.num_accum} = {self._opts.batch_size * self._opts.num_accum}'
+            ProjectLogger().info(f'Gradient accumulation enabled. Effective batch size -> {info}')
 
         try:
             if not self._opts.distributed or dist.get_rank() == 0:
@@ -149,6 +153,29 @@ class Trainer(ABC):
         if self._tracker:
             emissions = self._tracker.stop()
 
+    def step(self, netname, loss):
+        self._scaler.scale(loss.div(self._opts.num_accum)).backward()
+        if self.global_iter % self._opts.num_accum == 0:
+            # clip gradients if needed
+            params = self._net[netname].parameters()
+            if self._opts.clip_grad_norm is not None:
+                torch.nn.utils.clip_grad_norm_(params, self._opts.clip_grad_norm)
+            if self._opts.clip_grad_value is not None:
+                torch.nn.utils.clip_grad_value_(params, self._opts.clip_grad_value)
+
+            # do an optimizer step, rescale FP16 to FP32 if needed
+            self._scaler.step(self._optimizer[netname])
+            self._scaler.update()
+
+            # clear accumulated gradients
+            self._optimizer[netname].zero_grad(set_to_none=True)
+            # update scheduler
+            self._apply_schedule(netname)
+
+            # update the moving average with the new parameters from the last optimizer step
+            if netname in self._ema:
+                self._ema[netname].update()
+
     @abstractmethod
     def _train_loop(self, *args, **kwargs):
         pass
@@ -159,12 +186,12 @@ class Trainer(ABC):
     def _post_loop_hook(self, *args):
         pass
 
-    def _apply_schedules(self):
-        if self._opts.lr_schedules is not None:
-            for scheduler_name, scheduler in self._scheduler.items():
-                scheduler.step()
-                if type(self.writer) == SummaryWriter:
-                    self.writer.add_scalar(f'{scheduler_name}-learning_rate', self._optimizer[scheduler_name].param_groups[0]['lr'], self.current_epoch - 1)
+    def _apply_schedule(self, scheduler_name):
+        if scheduler_name in self._scheduler:
+            scheduler = self._scheduler[scheduler_name]
+            scheduler.step()
+            if type(self.writer) == SummaryWriter:
+                self.writer.add_scalar(f'{scheduler_name}-learning_rate', self._optimizer[scheduler_name].param_groups[0]['lr'], self.global_iter - 1)
 
     def _export_model(self):
         try:

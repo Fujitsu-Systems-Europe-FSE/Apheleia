@@ -47,11 +47,13 @@ class CommandLineParser:
         train_parser.add_argument('--resume', action='store_true', help='Resume training by restoring model and optimizers states.')
 
         # Generic optimizers params
-        # train_parser.add_argument('--lr', type=float, nargs='+', default=1e-3, help='Learning rate for optimizers.')
         train_parser.add_argument('--optimizers', type=str, nargs='+', choices=OptimizersCatalog().keys(), help='Optimizers to use.')
         train_parser.add_argument('--optimizers-params', type=str, nargs='+', help='E.g. <arg1>:<kwarg1>=<value> and are colon separated. Expected params for optimizer can be found in PyTorch documentation.')
         train_parser.add_argument('--lr-schedules', type=str, nargs='+', choices=SchedulesCatalog().keys(), help='Learning rate schedules to use.')
         train_parser.add_argument('--schedules-params', type=str, nargs='+', help='E.g. <arg1>:<kwarg1>=<value> and are colon separated. Expected params for a scheduler can be found in PyTorch documentation.')
+        train_parser.add_argument('--clip-grad-norm', type=float, help='Clip gradients norm')
+        train_parser.add_argument('--clip-grad-value', type=float, help='Clip gradients value')
+        train_parser.add_argument('--num-accum', type=int, default=1, help='Accumulate gradients to simulate a larger batch size')
 
         # Trainer interval opts and logs options
         train_parser.add_argument('--wandb', action='store_true', help='Upload logs to Weight and Biases.')
