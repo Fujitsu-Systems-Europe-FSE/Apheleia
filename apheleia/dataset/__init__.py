@@ -30,7 +30,9 @@ def build_dataset(dataset_class, path, args, additional_transforms=None):
             transforms.Normalize(args.means, args.stds)
         ]
 
-    return dataset_class(args, path, transform=transforms.Compose(trans + additional_transforms))
+    if additional_transforms is not None:
+        trans += additional_transforms
+    return dataset_class(args, path, transform=transforms.Compose(trans))
 
 
 def build_dataloader(dataset_class, path, batch_size, workers, args, dataset_factory_fn=build_dataset,
