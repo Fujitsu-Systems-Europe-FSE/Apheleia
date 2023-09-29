@@ -187,7 +187,7 @@ class Trainer(ABC):
         pass
 
     def _apply_schedule(self, scheduler_name):
-        if scheduler_name in self._scheduler:
+        if self._scheduler is not None and scheduler_name in self._scheduler:
             scheduler = self._scheduler[scheduler_name]
             scheduler.step()
             if type(self.writer) == SummaryWriter:
