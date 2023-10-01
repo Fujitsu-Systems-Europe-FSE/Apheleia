@@ -242,7 +242,9 @@ class Trainer(ABC):
         if self._chkpt_interval is not None and (self.current_epoch % self._chkpt_interval == 0):
             self._do_checkpoint()
             self._clean_checkpoints()
-        elif target.count > 0 and value > self._metrics_store.best_tgt_metric:
+        elif (target.count > 0 and
+              ((target.expected_behavior == 'increasing' and value > self._metrics_store.best_tgt_metric) or
+              (target.expected_behavior == 'decreasing' and value < self._metrics_store.best_tgt_metric))):
             self._metrics_store.best_tgt_metric = value
             ProjectLogger().info('Target metric has improved ! Checkpointing.')
             self._do_checkpoint()

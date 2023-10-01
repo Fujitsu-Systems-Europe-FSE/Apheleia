@@ -4,6 +4,13 @@ import numpy as np
 
 
 class Meter(ABC):
+    def __init__(self, name, fmt=':f', expected_behavior='increasing'):
+        assert expected_behavior in ['increasing', 'decreasing'], 'Invalid metric behavior.'
+        self.expected_behavior = expected_behavior
+        self.name = name
+        self.fmt = fmt
+        self.reset()
+
     @abstractmethod
     def reset(self):
         pass
@@ -16,12 +23,8 @@ class Meter(ABC):
     def get(self):
         pass
 
-class SumMeter(Meter):
-    def __init__(self, name, fmt=':f'):
-        self.name = name
-        self.fmt = fmt
-        self.reset()
 
+class SumMeter(Meter):
     def reset(self):
         self.sum = 0
         self.count = 0
@@ -40,11 +43,6 @@ class SumMeter(Meter):
 
 class AverageMeter(Meter):
     """Computes and stores the average and current value"""
-    def __init__(self, name, fmt=':f'):
-        self.name = name
-        self.fmt = fmt
-        self.reset()
-
     def reset(self):
         self.val = 0
         self.avg = 0
