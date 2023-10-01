@@ -19,7 +19,7 @@ class MetricStore(metaclass=ABCMeta):
             self.train[c] = [AverageMeter('')]
 
         self.target = None
-        self.best_tgt_metric = 0
+        self.best_tgt_metric = None
         self.sink: SummaryWriter = ...
 
     def add_target_metric(self, metric: Meter):
