@@ -15,6 +15,10 @@ class CommandLineParser:
         self._define_default_subparsers()
 
     def _define_default_subparsers(self):
+        self._define_train_subparser()
+        self._define_infer_subparser()
+
+    def _define_train_subparser(self):
         train_parser = self.add_subparser('train')
         train_parser.add_argument('arch', type=str, choices=PipelinesCatalog().choices(), help='Model architectures.')
         if self._with_dataset:
@@ -65,6 +69,15 @@ class CommandLineParser:
         train_parser.add_argument('--report-interval', type=int, default=2, help='Model report interval (epochs).')
         train_parser.add_argument('--thumb-interval', type=int, default=2, help='Thumbnail generation interval (epochs).')
         train_parser.add_argument('--stats-interval', type=int, default=10, help='Networks stats report interval (epochs).')
+
+    def _define_infer_subparser(self):
+        # TODO Avoid duplicated help text
+        infer_parser = self.add_subparser('infer')
+        infer_parser.add_argument('models', type=str, help='Models path. Loads whole model pretrained weights.')
+        infer_parser.add_argument('-b', '--batch-size', type=int, default=32, help='Batch size (comma separated list for dynamic batch sizes).')
+        infer_parser.add_argument('--arch', type=str, choices=PipelinesCatalog().choices(), help='Model architectures.')
+        infer_parser.add_argument('--gpus', type=str, default='', help='GPUs id to use, for example 0,1, etc. -1 to use cpu. Default: use all GPUs.')
+        infer_parser.add_argument('--seed', type=int, help='Set seed for reproducibility.')
 
     def add_subparser(self, name):
         if name in self._subparsers:

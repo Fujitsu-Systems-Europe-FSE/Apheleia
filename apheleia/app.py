@@ -1,8 +1,8 @@
-from apheleia import train
 from typing import Callable
 from functools import partial
 from daemonocle import Daemon
 from datetime import timedelta
+from apheleia import train, init_infer
 from apheleia.utils.patterns import Singleton
 from apheleia.utils.outputter import Outputter
 from apheleia.utils.initialization import seed
@@ -26,6 +26,8 @@ class App(metaclass=Singleton):
         if cli_action_name in self.cli._subparsers:
             if cli_action_name == 'train':
                 fun = partial(train, setup_env=fun)
+            elif cli_action_name == 'infer':
+                fun = partial(fun, get_model=init_infer)
             self._bootstrap_hooks[cli_action_name] = fun
         else:
             ProjectLogger().error(f'{cli_action_name} not found in cli subparsers. Cannot add hook.')

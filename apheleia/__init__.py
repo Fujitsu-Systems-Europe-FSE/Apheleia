@@ -1,7 +1,24 @@
 from apheleia.utils.logger import ProjectLogger
+from apheleia.factory.model_factory import ModelFactory
 from apheleia.factory.training_pipeline_factory import TrainingPipelineFactory
 
 import os
+import torch
+
+
+def init_infer(args, ctx):
+    try:
+        model = torch.jit.load(args.model, map_location=ctx[0])
+        model.eval()
+        return model
+    except Exception:
+        if args.arch is None:
+            raise Exception('Model architecture must be given when loading a checkpoint. Use --arch option.')
+
+        model_factory = ModelFactory(args, ctx)
+        models = model_factory.build()
+        models.eval()
+        return models
 
 
 def train(args, ctx, setup_env):
