@@ -78,6 +78,8 @@ class CommandLineParser:
         infer_parser.add_argument('--arch', type=str, choices=PipelinesCatalog().choices(), help='Model architectures.')
         infer_parser.add_argument('--gpus', type=str, default='', help='GPUs id to use, for example 0,1, etc. -1 to use cpu. Default: use all GPUs.')
         infer_parser.add_argument('--seed', type=int, help='Set seed for reproducibility.')
+        infer_parser.add_argument('-o', '--output', dest='outdir', type=str, help='Model output directory. Default: timestamped folder in current directory.')
+        infer_parser.add_argument('--overwrite', action='store_true', help='Overwrite output directory if it already exists.')
 
     def add_subparser(self, name):
         if name in self._subparsers:

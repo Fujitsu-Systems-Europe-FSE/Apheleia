@@ -1,7 +1,7 @@
+from pathlib import Path
 from datetime import datetime
 from apheleia.utils.patterns import Singleton
 
-import os
 import shutil
 
 
@@ -12,15 +12,15 @@ class Outputter(metaclass=Singleton):
 
             if opts.action == 'train':
                 model_name = opts.arch
-                default_dir = os.path.join(os.getcwd(), f'training-{model_name}-{opts.epochs}e-{current_time}')
+                default_dir = Path.cwd() / f'training-{model_name}-{opts.epochs}e-{current_time}'
             else:
-                default_dir = os.path.join(os.getcwd(), f'{opts.action}-{current_time}')
+                default_dir = Path.cwd() / f'{opts.action}-{current_time}'
 
-            self._outdir = opts.outdir or default_dir
-            self._outdir = os.path.expanduser(self._outdir)
+            self._outdir = Path(opts.outdir) or default_dir
+            self._outdir = self._outdir.expanduser()
             opts.outdir = self._outdir
 
-            outdir_exists = os.path.isdir(self._outdir)
+            outdir_exists = self._outdir.is_dir()
 
             if outdir_exists and not opts.overwrite:
                 if not hasattr(opts, 'resume') or not opts.resume:
@@ -30,4 +30,4 @@ class Outputter(metaclass=Singleton):
                     raise Exception('Cannot overwrite with resume option.')
                 shutil.rmtree(self._outdir)
 
-            os.makedirs(self._outdir, exist_ok=True)
+            self._outdir.mkdir(parents=True, exist_ok=True)
