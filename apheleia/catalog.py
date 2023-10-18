@@ -87,15 +87,22 @@ def register(namespace='', alias=None):
             add_in_catalog(LossesCatalog, ns_key, data_dict)
         elif issubclass(orig_class, AbstractDataset):
             add_in_catalog(DatasetsCatalog, ns_key, data_dict)
+        # Optimizer and Scheduler don't have namespace because they are generic enough
+        elif issubclass(orig_class, Optimizer):
+            add_in_catalog(OptimizersCatalog, None, data_dict)
+        elif issubclass(orig_class, LRScheduler):
+            add_in_catalog(SchedulesCatalog, None, data_dict)
         else:
-            raise Exception('Only classes inheriting from AbstractDataset or Loss can be registered in a Catalog')
+            raise Exception('Cannot be used to register a pipeline in Catalog')
 
         return orig_class
     return _register
 
 
 def add_in_catalog(catalog, namespace, data_dict):
-    if namespace not in catalog():
+    if namespace is None:
+        catalog().update(data_dict)
+    elif namespace not in catalog():
         catalog()[namespace] = data_dict
     else:
         catalog()[namespace].update(data_dict)
