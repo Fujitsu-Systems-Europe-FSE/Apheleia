@@ -153,11 +153,17 @@ class Trainer(ABC):
         if self._tracker:
             emissions = self._tracker.stop()
 
-    def step(self, netname, loss):
+    def step(self, netname, loss, strict_mode=True):
         self._scaler.scale(loss.div(self._opts.num_accum)).backward()
         if self.global_iter % self._opts.num_accum == 0:
             # clip gradients if needed
             params = self._net[netname].parameters()
+
+            if strict_mode:
+                no_grad_layers = [n for n, p in self._net[netname].named_parameters() if p.grad is None]
+                if len(no_grad_layers) > 0:
+                    ProjectLogger().warning(f'The following layers don\'t have grads : {no_grad_layers}')
+
             if self._opts.clip_grad_norm is not None:
                 torch.nn.utils.clip_grad_norm_(params, self._opts.clip_grad_norm)
             if self._opts.clip_grad_value is not None:
