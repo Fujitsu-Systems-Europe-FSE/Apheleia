@@ -74,7 +74,7 @@ class OptimizerFactory(Factory):
             try:
                 optimizers[names[j]] = optimizers[list(optimizers.keys())[0]] if reused else clazz(params[index], *args, **kwargs)
             except Exception as e:
-                ProjectLogger().error(f'{clazz.__name__} is expecting parameters. Refer to PyTorch doc and then use: --optimizer-params <params0>:<key1>=<params1>:<key2>=<params2>')
+                ProjectLogger().error(f'{clazz.__name__} is expecting parameters. Refer to PyTorch doc and then use: --optimizers-params <params0>:<key1>=<params1>:<key2>=<params2>')
                 raise e
 
         return optimizers
