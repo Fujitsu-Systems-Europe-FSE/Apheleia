@@ -25,6 +25,6 @@ class Loss(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def compute(self, prediction, target):
+    def compute(self, prediction, target, *args):
         Loss.check_grad_required(prediction)
         assert target.requires_grad is False
