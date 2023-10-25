@@ -30,8 +30,9 @@ def build_dataset(dataset_class, path, args, additional_transforms=None):
             transforms.Normalize(args.means, args.stds)
         ]
 
+    # prepend additional transforms
     if additional_transforms is not None:
-        trans += additional_transforms
+        trans = additional_transforms + trans
     return dataset_class(args, path, transform=transforms.Compose(trans))
 
 
