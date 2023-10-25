@@ -16,7 +16,7 @@ class MetricStore(metaclass=ABCMeta):
         self.test = dict()
 
         for c in loss.components:
-            self.train[c] = [AverageMeter('')]
+            self.train[c] = [AverageMeter('', expected_behavior='decreasing')]
 
         self.target = None
         self.best_tgt_metric = None
