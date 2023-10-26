@@ -6,10 +6,16 @@
 Welcome to Apheleia's documentation!
 ====================================
 
+Apheleia is a high-level library to help DL/RL training in PyTorch.
+It provides a frame to handle training loop lifecycle : checkpointing, model evaluation, distributed training, etc.
+
+It also handles integration within popular visualization tools like Tensorboard and Weight & Biases.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   modules
 
 
 Indices and tables
