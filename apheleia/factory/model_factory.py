@@ -13,7 +13,7 @@ class ModelFactory(Factory):
     Args:
         Factory: generic factory
     """
-    def build(self):
+    def build(self, strict=True):
         """
         Build the model specified in options
 
@@ -25,7 +25,7 @@ class ModelFactory(Factory):
         nets.extend(self._init_models())
 
         self._parallelize_models(nets)
-        self._load_weights(nets)
+        self._load_weights(nets, strict=strict)
 
         return nets
 
@@ -53,11 +53,11 @@ class ModelFactory(Factory):
         else:
             ProjectLogger().warning('Models cannot be parallelized on cpu')
 
-    def _load_weights(self, nets):
+    def _load_weights(self, nets, strict=True):
         if self._save:
             for k, v in nets.items():
                 try:
-                    v.load_state_dict(self.get_state_dict(f'{k}_state'), strict=False)
+                    v.load_state_dict(self.get_state_dict(f'{k}_state'), strict=strict)
                 except RuntimeError as e:
                     ProjectLogger().error(f'Cannot load weights properly for model {v.module._get_name()}')
                     raise e
