@@ -4,3 +4,4 @@ torchvision
 daemonocle==1.2.3
 codecarbon==2.1.4
 wandb
+sphinx
