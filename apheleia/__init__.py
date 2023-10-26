@@ -6,7 +6,7 @@ import os
 import torch
 
 
-def init_infer(args, ctx):
+def init_infer(args, ctx, model_name=None):
     try:
         model = torch.jit.load(args.model, map_location=ctx[0])
         model.eval()
@@ -18,6 +18,10 @@ def init_infer(args, ctx):
         model_factory = ModelFactory(args, ctx)
         models = model_factory.build()
         models.eval()
+
+        if model_name is not None:
+            return models[model_name]
+
         return models
 
 
