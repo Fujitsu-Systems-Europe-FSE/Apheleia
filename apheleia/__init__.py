@@ -1,3 +1,4 @@
+from pathlib import Path
 from apheleia.utils.logger import ProjectLogger
 from apheleia.factory.model_factory import ModelFactory
 from apheleia.factory.training_pipeline_factory import TrainingPipelineFactory
@@ -8,7 +9,7 @@ import torch
 
 def init_infer(args, ctx, model_name=None):
     try:
-        model = torch.jit.load(args.model, map_location=ctx[0])
+        model = torch.jit.load(Path(args.models).expanduser(), map_location=ctx[0])
         model.eval()
         return model
     except Exception:

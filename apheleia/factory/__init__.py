@@ -1,6 +1,6 @@
+from pathlib import Path
 from abc import ABC, abstractmethod
 
-import os
 import torch
 
 
@@ -16,7 +16,7 @@ class Factory(ABC):
         self._model = opts.arch
         if '_' in opts.arch:
             self._namespace, self._model = opts.arch.split('_', 1)
-        self._save = torch.load(os.path.expanduser(self._opts.models), map_location=torch.device('cpu')) if self._opts.models else None
+        self._save = torch.load(Path(self._opts.models).expanduser(), map_location=torch.device('cpu')) if self._opts.models else None
 
     @abstractmethod
     def build(self, *args):
