@@ -21,7 +21,7 @@ def build_dataset(dataset_class, path, args, additional_transforms=None):
         if hasattr(args, 'im_size'):
             args.im_size = args.im_size if isinstance(args.im_size, tuple) or isinstance(args.im_size, list) else (args.im_size, args.im_size)
             w, h = args.im_size
-            trans = [transforms.Resize((h, w))]
+            trans = [transforms.Resize((h, w), antialias=True)]
         else:
             ProjectLogger().warning('Dataset won\'t be resizable : Missing --im-size on cli parser.')
 
