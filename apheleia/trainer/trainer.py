@@ -6,10 +6,10 @@ from apheleia.utils.wandb_writer import WandbWriter
 from apheleia.metrics.metric_store import MetricStore
 from apheleia.utils.error_handling import handle_exception
 from codecarbon import EmissionsTracker, OfflineEmissionsTracker
+from apheleia.utils.metadata import save_parameters_dump
 
 import os
 import glob
-import json
 import time
 import torch
 import torch.distributed as dist
@@ -75,10 +75,7 @@ class Trainer(ABC):
     def _prepare_outdir(self):
         os.makedirs(self._outlogs, exist_ok=True)
         os.makedirs(self._outchkpts, exist_ok=True)
-
-        params_dump = os.path.join(self._outdir, 'parameters_dump_{}.json'.format(self._model_name))
-        with open(params_dump, 'w') as f:
-            json.dump(vars(self._opts), f, indent=4, skipkeys=True, default=lambda x: str(x))
+        save_parameters_dump(self._opts, self._outdir, suffix=self._model_name)
 
     def _e_tick(self):
         self._epoch_tick = time.time()
