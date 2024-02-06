@@ -12,13 +12,14 @@ class AbstractDataset(Dataset, metaclass=ABCMeta):
         pass
 
 
-class ImageDataset(AbstractDataset):
+class ImageDataset(AbstractDataset, metaclass=ABCMeta):
+    def num_classes(self):
+        raise NotImplementedError()
+
+
+class VectorDataset(AbstractDataset, metaclass=ABCMeta):
     pass
 
 
-class VectorDataset(AbstractDataset):
-    pass
-
-
-class Memory(AbstractDataset):
+class Memory(AbstractDataset, metaclass=ABCMeta):
     pass
