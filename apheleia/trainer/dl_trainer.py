@@ -1,5 +1,4 @@
 from time import time
-from tqdm import tqdm
 from abc import ABC, abstractmethod
 from apheleia.trainer.trainer import Trainer
 from apheleia.utils.logger import ProjectLogger
@@ -8,10 +7,6 @@ import torch.distributed as dist
 
 
 class DLTrainer(Trainer, ABC):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._pbar = tqdm()
 
     @abstractmethod
     def _iteration(self, batch, batch_idx, *args):

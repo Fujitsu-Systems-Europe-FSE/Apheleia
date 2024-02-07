@@ -1,3 +1,4 @@
+from tqdm import tqdm
 from apheleia.app import App
 from abc import ABC, abstractmethod
 from apheleia.utils.logger import ProjectLogger
@@ -121,6 +122,7 @@ class Trainer(ABC):
 
         self._report_graph()
 
+        self._pbar = tqdm()
         for self.current_epoch in range(self._start_epoch, self._epochs + 1):
             if self._opts.distributed:
                 # let all processes sync up before starting with a new epoch of training
