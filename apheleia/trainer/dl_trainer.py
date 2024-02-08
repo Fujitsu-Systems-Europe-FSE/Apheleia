@@ -40,6 +40,10 @@ class DLTrainer(Trainer, ABC):
             self._iteration(batch, batch_idx)
 
     def _post_loop_hook(self, val_data, test_data, *args):
+        # When training is interactive insert newline after tqdm pbar
+        if not self._opts.daemon:
+            print('')
+
         if not self._opts.distributed or dist.get_rank() == 0:
             if self._validator is not None:
                 if self._val_interval is not None and (self.current_epoch % self._val_interval == 0):
@@ -47,10 +51,6 @@ class DLTrainer(Trainer, ABC):
 
                 if self._test_interval is not None and (self.current_epoch % self._test_interval == 0):
                     self._validator.evaluate(test_data, 'Test')
-
-        # When training is interactive insert newline after tqdm pbar
-        if not self._opts.daemon:
-            print('')
 
         self._log_epoch()
         self._try_checkpoint()
