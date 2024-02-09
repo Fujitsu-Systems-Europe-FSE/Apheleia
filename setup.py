@@ -23,7 +23,7 @@ opts = {
     'author': 'Julien WALLART',
     'author_email': 'julien.wallart@fujitsu.com',
     'name': 'Apheleia',
-    'version': '0.2.0',
+    'version': '0.2.1',
     'packages': found_packages,
     'install_requires': pip_list,
     'dependency_links': download_list,
