@@ -16,7 +16,12 @@ class WelfordRunningStats:
         self.M2 = 0
 
     def calc_mean_std(self, dataset: Iterable):
-        for im in dataset:
+        for e in dataset:
+            im = e
+            y = None
+            if type(e) == tuple:
+                im, y = e
+
             if type(im) == torch.Tensor:
                 im = im.numpy()
             self.update(im)
