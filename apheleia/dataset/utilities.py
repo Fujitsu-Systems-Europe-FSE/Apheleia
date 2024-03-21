@@ -11,9 +11,9 @@ class WelfordRunningStats:
     Calculate dataset statistics iteratively using Welford algorithm
     """
     def __init__(self):
-        self.n = 0
-        self.mean = 0
-        self.M2 = 0
+        self.ns = None
+        self.means = None
+        self.M2s = None
 
     def calc_mean_std(self, dataset: Iterable):
         for e in dataset:
@@ -25,24 +25,42 @@ class WelfordRunningStats:
             if type(im) == torch.Tensor:
                 im = im.numpy()
             self.update(im)
-        return self.mean, self.std_dev()
+        return self.means, self.std_devs()
 
-    def update(self, image: np.ndarray):
+    def _init_arrays(self, num_channels):
+        if self.means is None:
+            self.means = [0] * num_channels
+            self.ns = [0] * num_channels
+            self.M2s = [0] * num_channels
+
+    def update(self, image: np.ndarray | torch.Tensor):
+        if type(image) != np.ndarray:
+            image = image.numpy()
+
+        if image.ndim > 2:
+            self._init_arrays(image.shape[0])
+            for i, c in enumerate(image):
+                self._update_channel(i, c)
+        else:
+            self._init_arrays(1)
+            self._update_channel(0, image)
+
+    def _update_channel(self, channel_idx, image: np.ndarray):
         flat_image = image.flatten()
         count = flat_image.size
-        delta = flat_image - self.mean
-        self.mean += np.sum(delta) / (self.n + count)
-        delta2 = flat_image - self.mean
-        self.M2 += np.sum(delta * delta2)
-        self.n += count
+        delta = flat_image - self.means[channel_idx]
+        self.means[channel_idx] += np.sum(delta) / (self.ns[channel_idx] + count)
+        delta2 = flat_image - self.means[channel_idx]
+        self.M2s[channel_idx] += np.sum(delta * delta2)
+        self.ns[channel_idx] += count
 
-    def variance(self):
-        if self.n < 2:
+    def variance(self, idx):
+        if self.ns[idx] < 2:
             return float('nan')
-        return self.M2 / (self.n - 1)
+        return self.M2s[idx] / (self.ns[idx] - 1)
 
-    def std_dev(self):
-        return np.sqrt(self.variance())
+    def std_devs(self):
+        return [np.sqrt(self.variance(i)) for i in range(len(self.means))]
 
 
 def load_values(values_file):
