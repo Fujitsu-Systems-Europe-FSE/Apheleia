@@ -13,6 +13,8 @@ class WelfordRunningStats:
     def __init__(self):
         self.ns = None
         self.means = None
+        self.mins = None
+        self.maxs = None
         self.M2s = None
 
     def calc_mean_std(self, dataset: Iterable):
@@ -32,6 +34,8 @@ class WelfordRunningStats:
             self.means = [0] * num_channels
             self.ns = [0] * num_channels
             self.M2s = [0] * num_channels
+            self.mins = [0] * num_channels
+            self.maxs = [0] * num_channels
 
     def update(self, image: np.ndarray | torch.Tensor):
         if type(image) != np.ndarray:
@@ -53,6 +57,8 @@ class WelfordRunningStats:
         delta2 = flat_image - self.means[channel_idx]
         self.M2s[channel_idx] += np.sum(delta * delta2)
         self.ns[channel_idx] += count
+        self.mins[channel_idx] = min(self.mins[channel_idx], flat_image.min())
+        self.maxs[channel_idx] = max(self.maxs[channel_idx], flat_image.max())
 
     def variance(self, idx):
         if self.ns[idx] < 2:
@@ -61,6 +67,9 @@ class WelfordRunningStats:
 
     def std_devs(self):
         return [np.sqrt(self.variance(i)) for i in range(len(self.means))]
+
+    def bounds(self):
+        return [(mini, maxi) for mini, maxi in zip(self.mins, self.maxs)]
 
 
 def load_values(values_file):
