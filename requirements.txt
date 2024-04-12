@@ -7,3 +7,4 @@ wandb
 # TODO move to dev requirements.txt
 sphinx
 sphinx-rtd-theme
+tqdm

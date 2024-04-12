@@ -24,3 +24,13 @@ def gradients_norm_hist(writer, title, grads_norm: List[np.ndarray], epoch, n_bi
 
     writer.add_figure(f'gradients/{title}', fig, global_step=epoch)
     writer.flush()
+
+
+def fig_as_numpy(fig):
+    fig.canvas.draw()
+
+    graph = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8)
+    graph = graph.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+
+    plt.close(fig)
+    return graph

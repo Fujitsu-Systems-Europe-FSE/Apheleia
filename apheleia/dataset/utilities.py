@@ -17,17 +17,17 @@ class WelfordRunningStats:
         self.maxs = None
         self.M2s = None
 
-    def calc_mean_std(self, dataset: Iterable):
-        for e in dataset:
-            im = e
-            y = None
-            if type(e) == tuple:
-                im, y = e
-
-            if type(im) == torch.Tensor:
-                im = im.numpy()
-            self.update(im)
-        return self.means, self.std_devs()
+    # def calc_mean_std(self, dataset: Iterable):
+    #     for e in dataset:
+    #         im = e
+    #         y = None
+    #         if type(e) == tuple:
+    #             im, y = e
+    #
+    #         if type(im) == torch.Tensor:
+    #             im = im.numpy()
+    #         self.update(im)
+    #     return self.means, self.std_devs()
 
     def _init_arrays(self, num_channels):
         if self.means is None:

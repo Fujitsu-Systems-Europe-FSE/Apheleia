@@ -7,6 +7,9 @@ import torch.distributed as dist
 
 
 class DLTrainer(Trainer, ABC):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self._data_preprocessor = None
 
     @abstractmethod
     def _iteration(self, batch, batch_idx, *args):
@@ -17,6 +20,14 @@ class DLTrainer(Trainer, ABC):
 
     def _b_duration(self):
         return time() - self._batch_tick
+
+    def _train(self, train_data, *args):
+        try:
+            self._data_preprocessor = train_data.dataset.get_preprocessor()
+        except NotImplementedError:
+            ProjectLogger().info('No data preprocessor defined on training dataset.')
+
+        super()._train(train_data, *args)
 
     def _log_iteration(self, batch_idx):
         if self.global_iter % self._log_interval == 0:
