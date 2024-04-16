@@ -16,7 +16,7 @@ class Outputter(metaclass=Singleton):
             else:
                 default_dir = Path.cwd() / f'{opts.action}-{current_time}'
 
-            self._outdir = Path(opts.outdir) or default_dir
+            self._outdir = default_dir if opts.outdir is None else Path(opts.outdir)
             self._outdir = self._outdir.expanduser()
             opts.outdir = self._outdir
 
