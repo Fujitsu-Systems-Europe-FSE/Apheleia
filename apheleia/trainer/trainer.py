@@ -131,7 +131,6 @@ class Trainer(ABC):
             self._e_tick()
             self._metrics_store.reset()
 
-            self._report_params()
             # self._start_profiler(epoch)
 
             if self._opts.target_metric is not None and self._metrics_store.best_tgt_metric >= self._opts.target_metric:
@@ -171,6 +170,9 @@ class Trainer(ABC):
             # do an optimizer step, rescale FP16 to FP32 if needed
             self._scaler.step(self._optimizer[netname])
             self._scaler.update()
+
+            # Report weights and grads before grads got wiped
+            self._report_params()
 
             # clear accumulated gradients
             self._optimizer[netname].zero_grad(set_to_none=True)
@@ -288,7 +290,8 @@ class Trainer(ABC):
                             model_name = self._net.get_raw(k).model_name()
                             param_name = '.'.join(name.split('.')[1:])
 
-                            self.writer.add_histogram(f'{model_name}_weights_biases/{param_name}', weight, self.current_epoch, max_bins=512)
+                            if weight is not None and not torch.isnan(weight.sum()).item() and not torch.isinf(weight.sum()).item():
+                                self.writer.add_histogram(f'{model_name}_weights_biases/{param_name}', weight, self.current_epoch, max_bins=512)
                             if grad is not None and not torch.isnan(grad.sum()).item() and not torch.isinf(grad.sum()).item():
                                 self.writer.add_histogram(f'{model_name}_grads/{param_name}', grad, self.current_epoch, max_bins=512)
 
