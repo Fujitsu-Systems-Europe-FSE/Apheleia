@@ -280,7 +280,8 @@ class Trainer(ABC):
             self.writer.flush()
 
     def _report_params(self):
-        if self._report_interval > 0 and self.current_epoch % self._report_interval == 0:
+        if self._report_interval > 0 and self.current_epoch % self._report_interval == 0\
+                and self.global_iter % self.num_iter == 0:
             if self.writer is not ...:
                 for k, v in self._net.items():
                     names, weights, grads = self.get_params(k)
