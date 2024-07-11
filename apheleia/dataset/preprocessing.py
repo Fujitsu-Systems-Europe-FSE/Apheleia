@@ -32,7 +32,12 @@ class Normalizer(Preprocessor):
 
     def lazy_fit(self, min_values, max_values):
         self._min = min_values
+        if not isinstance(self._min, np.ndarray):
+            self._min = np.array(self._min)
+
         self._max = max_values
+        if not isinstance(self._max, np.ndarray):
+            self._max = np.array(self._max)
 
     def fit(self, data):
         if not isinstance(data, np.ndarray):
@@ -55,7 +60,12 @@ class Standardizer(Preprocessor):
 
     def lazy_fit(self, mean_values, std_values):
         self._mean = mean_values
+        if not isinstance(self._mean, np.ndarray):
+            self._mean = np.array(self._mean)
+
         self._std = std_values
+        if not isinstance(self._std, np.ndarray):
+            self._std = np.array(self._std)
 
     def fit(self, data):
         if not isinstance(data, np.ndarray):

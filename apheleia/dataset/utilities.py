@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Iterable
+from pickle import dump, load
 
 import json
 import torch
@@ -88,3 +89,13 @@ def save_values(outdir, values_dict):
 def save_json(outfile, values):
     with open(outfile, 'w') as f:
         json.dump(values, f, indent=4,  skipkeys=True, default=lambda x: str(x))
+
+
+def save_preprocessors(outdir, preprocessors):
+    path = Path(outdir).expanduser() / 'preprocessor.pkl'
+    dump(preprocessors, open(path, 'wb'))
+
+
+def load_preprocessors(preproc_file):
+    path = Path(preproc_file).expanduser()
+    return load(open(path, 'rb'))
