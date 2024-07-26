@@ -84,7 +84,7 @@ class MetricStore(metaclass=ABCMeta):
     @staticmethod
     def update_metrics(metrics, values_dict):
         for k, v in values_dict.items():
-            assert k in metrics, f'No  {k} metric found.'
+            assert k in metrics, f'No {k} metric found.'
             if type(v) != list:
                 v = [v]
 

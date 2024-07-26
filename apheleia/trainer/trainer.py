@@ -242,6 +242,9 @@ class Trainer(ABC):
             return
 
         target = self._metrics_store.target
+        if target is None:
+            return
+
         value = target.get()
         if type(value) == dict:
             value = value[target.target()]

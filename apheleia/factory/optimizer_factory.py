@@ -1,37 +1,13 @@
 from apheleia.factory import Factory
 from torch_ema import ExponentialMovingAverage
 from apheleia.utils.logger import ProjectLogger
+from apheleia.utils.parsing import from_params_str
 from apheleia.catalog import OptimizersCatalog, PipelinesCatalog, SchedulesCatalog
 
-import json
 import itertools
 
 
 class OptimizerFactory(Factory):
-
-    @staticmethod
-    def auto_parse(val):
-        # return float(val) if val.isdigit() else bool(val)
-        try:
-            return json.loads(val)
-        except:
-            return bool(val)
-
-    @staticmethod
-    def build_args(params_list, index):
-        args = []
-        kwargs = {}
-
-        if params_list is not None:
-            params = params_list[index]
-            for p in params.split(':'):
-                p = p.split('=')
-                if len(p) == 2:
-                    kwargs[p[0]] = OptimizerFactory.auto_parse(p[1])
-                else:
-                    args.append(OptimizerFactory.auto_parse(p[0]))
-
-        return args, kwargs
 
     def _init_ema(self, names, params):
         ema = {}
@@ -69,7 +45,7 @@ class OptimizerFactory(Factory):
             state = 'RE-USED' if reused else 'USED'
             ProjectLogger().info(f'{optim_name.upper()} will be {state} as optimizer with {names[j]}.')
 
-            args, kwargs = OptimizerFactory.build_args(self._opts.optimizers_params, index)
+            args, kwargs = from_params_str(self._opts.optimizers_params, index)
             clazz = OptimizersCatalog()[optim_name]
             try:
                 optimizers[names[j]] = optimizers[list(optimizers.keys())[0]] if reused else clazz(params[index], *args, **kwargs)
@@ -87,7 +63,7 @@ class OptimizerFactory(Factory):
         for i, lr_schedule in enumerate(self._opts.lr_schedules):
             ProjectLogger().info(f'{lr_schedule.upper()} will be used as scheduler with {names[i]}.')
 
-            args, kwargs = OptimizerFactory.build_args(self._opts.schedules_params, i)
+            args, kwargs = from_params_str(self._opts.schedules_params, i)
             clazz = SchedulesCatalog()[lr_schedule]
             try:
                 schedules[names[i]] = clazz(optimizers[i], *args, **kwargs)

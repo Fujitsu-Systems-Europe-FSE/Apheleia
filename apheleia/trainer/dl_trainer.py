@@ -39,7 +39,7 @@ class DLTrainer(Trainer, ABC):
             else:
                 self._pbar.update(self._log_interval)
                 self._pbar.set_description(f'[Epoch {self.current_epoch}]')
-                loss = sum([v[0].get() for v in self._metrics_store.train.values()])
+                loss = sum([v[0].get() for k, v in self._metrics_store.train.items() if k.startswith('loss/')])
                 self._pbar.set_postfix_str(f'loss -> {loss:.4f}')
 
     def _pre_loop_hook(self, *args):

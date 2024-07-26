@@ -18,7 +18,11 @@ class WandbWriter:
                 wandb.tensorboard.patch(root_logdir=self._logdir, pytorch=True)
             except Exception:
                 ProjectLogger().warning('WandB tensorboard already patched.')
-            wandb.init(project=self._project_name, name=os.path.basename(self._opts.outdir), sync_tensorboard=True)
+
+            # Initialize Wandb if it's not done already
+            if wandb.run is None:
+                wandb.init(project=self._project_name, name=os.path.basename(self._opts.outdir), sync_tensorboard=True)
+
             wandb.config.update(self._opts)
             return wandb
 
