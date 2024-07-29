@@ -62,6 +62,7 @@ class CommandLineParser:
         # Trainer interval opts and logs options
         train_parser.add_argument('--wandb', action='store_true', help='Upload logs to Weight and Biases.')
         train_parser.add_argument('--sweep', type=str, help='Wandb sweep conf file for hyperparameters exploration. Enables --wandb')
+        train_parser.add_argument('--resume-sweep', type=str, help='Resume an existing sweep with its sweep ID')
         train_parser.add_argument('--log-interval', type=int, default=5, help='Iterations log interval.')
         train_parser.add_argument('--chkpt-interval', type=int, help='Model checkpointing interval (epochs).')
         train_parser.add_argument('--max-chkpts', type=int, default=5, help='Maximum number of checkpoints to keep. Only the best will be kept.')

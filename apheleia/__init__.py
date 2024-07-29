@@ -38,8 +38,8 @@ def train(args, ctx, setup_env):
     elif args.sweep:
         args.wandb = True
         sweep_config = load_values(Path(args.sweep).expanduser())
-        sweep_id = wandb.sweep(sweep_config, project=args.arch)
-        wandb.agent(sweep_id, function=partial(init_sweep_train, args, ctx, train_data, val_data, test_data), count=10)
+        sweep_id = wandb.sweep(sweep_config, project=args.arch) if args.resume_sweep is None else args.resume_sweep
+        wandb.agent(sweep_id, project=args.arch, function=partial(init_sweep_train, args, ctx, train_data, val_data, test_data), count=10)
     else:
         init_train(args, ctx, train_data, val_data, test_data)
 
