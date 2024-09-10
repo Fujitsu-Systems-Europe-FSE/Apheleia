@@ -93,6 +93,7 @@ class OptimizerFactory(Factory):
         schedulers = self._init_schedulers(net_names, [v for v in optimizers.values()])
         ema = self._init_ema(net_names, [v.parameters() for v in nets.values()])
 
-        self._load_states(optimizers, ema)
+        if not self._opts.ignore_states:
+            self._load_states(optimizers, ema)
 
         return optimizers, schedulers, ema

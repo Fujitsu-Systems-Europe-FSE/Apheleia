@@ -49,6 +49,7 @@ class CommandLineParser:
         train_parser.add_argument('--seed', type=int, help='Set seed for reproducibility.')
         train_parser.add_argument('--models', type=str, help='Models path. Loads whole model pretrained weights.')
         train_parser.add_argument('--resume', action='store_true', help='Resume training by restoring model and optimizers states.')
+        train_parser.add_argument('--ignore-states', action='store_true', help='Ignore optimizers states if any.')
 
         # Generic optimizers params
         train_parser.add_argument('--optimizers', type=str, nargs='+', choices=OptimizersCatalog().keys(), help='Optimizers to use.')
