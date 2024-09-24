@@ -57,6 +57,7 @@ class Trainer(ABC):
         self.current_epoch: int = ...
         self.num_iter: int = ...
         self.global_iter: int = 0
+        self.remaining_iter: int = ...
         # self.global_tick: int = 0
 
         self._outdir = self._opts.outdir
@@ -168,6 +169,7 @@ class Trainer(ABC):
                 torch.nn.utils.clip_grad_value_(params, self._opts.clip_grad_value)
 
             # do an optimizer step, rescale FP16 to FP32 if needed
+            # warning closure is not yet supported by scaler
             self._scaler.step(self._optimizer[netname])
             self._scaler.update()
 

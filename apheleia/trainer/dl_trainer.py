@@ -48,6 +48,7 @@ class DLTrainer(Trainer, ABC):
     def _train_loop(self, train_data, *args, **kwargs):
         for batch_idx, batch in enumerate(train_data, start=1):
             self.global_iter += 1
+            self.remaining_iter = self.num_iter - batch_idx
             self._iteration(batch, batch_idx)
 
     def _post_loop_hook(self, val_data, test_data, *args):
