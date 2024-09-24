@@ -152,7 +152,7 @@ class Trainer(ABC):
         if self._tracker:
             emissions = self._tracker.stop()
 
-    def step(self, netname, loss, strict_mode=True):
+    def step(self, netname, loss, strict_mode=True, closure=None):
         self._scaler.scale(loss.div(self._opts.num_accum)).backward()
         if self.global_iter % self._opts.num_accum == 0:
             # clip gradients if needed
@@ -169,8 +169,8 @@ class Trainer(ABC):
                 torch.nn.utils.clip_grad_value_(params, self._opts.clip_grad_value)
 
             # do an optimizer step, rescale FP16 to FP32 if needed
-            # warning closure is not yet supported by scaler
-            self._scaler.step(self._optimizer[netname])
+            # warning closure is not yet supported if GradScaler is enabled
+            self._scaler.step(self._optimizer[netname], closure=closure)
             self._scaler.update()
 
             # Report weights and grads before grads got wiped
