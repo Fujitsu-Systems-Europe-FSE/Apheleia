@@ -33,6 +33,7 @@ class CommandLineParser:
         train_parser.add_argument('--overwrite', action='store_true', help='Overwrite output directory if it already exists.')
         train_parser.add_argument('--gpus', type=str, default='', help='GPUs id to use, for example 0,1, etc. -1 to use cpu. Default: use all GPUs.')
         train_parser.add_argument('--distributed', action='store_true', help='Enable distributed training among multiple nodes.')
+        train_parser.add_argument('--no-shuffle', action='store_true', help='Disables data shuffling. Shuffle is automatically disabled if a data sampler is defined')
         train_parser.add_argument('--rank', type=int, help='Please see pytorch documentation for distributed execution.')
         train_parser.add_argument('--world-size', type=int, help='Please see pytorch documentation for distributed execution.')
         train_parser.add_argument('--master', type=str, help='Please see pytorch documentation for distributed execution.')

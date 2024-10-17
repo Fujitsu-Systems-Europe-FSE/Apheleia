@@ -53,10 +53,11 @@ def build_dataloader(dataset_class, path, batch_size, workers, args, dataset_fac
     """
     dataset = dataset_factory_fn(dataset_class, path, args, additional_transforms)
     sampler = sampler_fn(args, dataset)
+    shuffle = (not args.no_shuffle) if sampler is None else False
     opts = {
         'batch_size': batch_size,
         'drop_last': False,
-        'shuffle': True if sampler is None else False,
+        'shuffle': shuffle,
         'num_workers': workers,
         'sampler': sampler
     }
