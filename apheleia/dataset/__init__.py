@@ -6,7 +6,7 @@ from apheleia.dataset.abstract_dataset import ImageDataset
 
 
 def build_sampler(args, dataset):
-    sampler = DistributedSampler(dataset) if args.distributed else None
+    sampler = DistributedSampler(dataset) if (hasattr(args, 'distributed') and args.distributed) else None
     return sampler
 
 

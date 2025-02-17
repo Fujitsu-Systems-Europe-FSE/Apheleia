@@ -175,6 +175,8 @@ class Trainer(ABC):
 
             # Report weights and grads before grads got wiped
             self._report_params()
+            # Report stats
+            self._report_stats()
 
             # clear accumulated gradients
             self._optimizer[netname].zero_grad(set_to_none=True)
@@ -285,8 +287,7 @@ class Trainer(ABC):
             self.writer.flush()
 
     def _report_params(self):
-        if self._report_interval > 0 and self.current_epoch % self._report_interval == 0\
-                and self.global_iter % self.num_iter == 0:
+        if self._report_interval > 0 and self.current_epoch % self._report_interval == 0 and self.global_iter % self.num_iter == 0:
             if self.writer is not ...:
                 for k, v in self._net.items():
                     names, weights, grads = self.get_params(k)
@@ -303,9 +304,12 @@ class Trainer(ABC):
 
                 self.writer.flush()
 
-    @abstractmethod
     def _report_stats(self, *args):
-        pass
+        if self._stats_interval > 0 and self.current_epoch % self._stats_interval == 0 and self.global_iter % self.num_iter == 0:
+            if self.writer is not ...:
+                for k in self._net.keys():
+                    grads_norms = self._net.get_raw(k).get_grads_stats()
+                    self.writer.add_scalar(f'GradsNorms/{k}', grads_norms.mean(), self.current_epoch)
 
     @abstractmethod
     def get_graph(self) -> torch.nn.Module:

@@ -1,9 +1,9 @@
 from torch import nn
 from abc import ABC, abstractmethod
 from apheleia.utils.logger import ProjectLogger
+from apheleia.utils.gradients import calc_net_gradient_norm
 
 import torch
-import numpy as np
 
 
 class NeuralNet(ABC, nn.Module):
@@ -20,10 +20,9 @@ class NeuralNet(ABC, nn.Module):
         except Exception as e:
             ProjectLogger().warning(f'Please correct model structure, it cannot be exported in torchscript format {e}')
 
-    def get_grads(self, *args):
-        inputs, = args
-        _, grad_means, grad_stds, grad_mean_norms, normalizers = grads_analysis(self._stages, inputs, detach=True)
-        return [grad_means], [grad_stds], [np.arange(len(grad_stds))], [normalizers], ['stages']
+    def get_grads_stats(self):
+        norms = calc_net_gradient_norm(self)
+        return norms
 
     @staticmethod
     @abstractmethod
