@@ -26,14 +26,13 @@ class TrainingPipelineFactory(Factory):
         assert len(losses), f'No losses defined for current arch {self._namespace} -> {self._model}'
         loss_name = self._opts.loss if hasattr(self._opts, 'loss') and self._opts.loss is not None else losses[0]
         selected_loss = LossesCatalog()[self._namespace][loss_name]
-        # loss = selected_loss['class']
-        # assert loss_name in PipelinesCatalog()[self._namespace][self._model]['losses'], f'Invalid loss for current arch {self._namespace} -> {self._model}'
+
+        assert loss_name in losses, f'Invalid loss for current arch {self._namespace} -> {self._model}'
 
         # if 'type' in selected_loss and hasattr(self._opts, 'dataset_type'):
         #     loss_type = selected_loss['type']
         #     assert loss_type == self._opts.dataset_type, f'Invalid loss for current dataset {self._opts.dataset_class} -> {self._opts.dataset_type}'
 
-        # return loss(self._opts)
         return selected_loss(self._opts)
 
     def _init_metrics(self, loss):
