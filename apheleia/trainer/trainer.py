@@ -311,6 +311,8 @@ class Trainer(ABC):
                     grads_norms = self._net.get_raw(k).get_grads_stats()
                     self.writer.add_scalar(f'GradsNorms/{k}', grads_norms.mean(), self.current_epoch)
 
+                self.writer.flush()
+
     @abstractmethod
     def get_graph(self) -> torch.nn.Module:
         pass
