@@ -152,8 +152,8 @@ class Trainer(ABC):
         if self._tracker:
             emissions = self._tracker.stop()
 
-    def step(self, netname, loss, strict_mode=True, closure=None):
-        self._scaler.scale(loss.div(self._opts.num_accum)).backward()
+    def step(self, netname, loss, strict_mode=True, closure=None, retain_graph=False):
+        self._scaler.scale(loss.div(self._opts.num_accum)).backward(retain_graph=retain_graph)
         if self.global_iter % self._opts.num_accum == 0:
             # clip gradients if needed
             params = self._net[netname].parameters()
