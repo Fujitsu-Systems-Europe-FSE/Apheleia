@@ -309,7 +309,8 @@ class Trainer(ABC):
             if self.writer is not ...:
                 for k in self._net.keys():
                     grads_norms = self._net.get_raw(k).get_grads_stats()
-                    self.writer.add_scalar(f'GradsNorms/{k}', grads_norms.mean(), self.current_epoch)
+                    if grads_norms is not None:
+                        self.writer.add_scalar(f'GradsNorms/{k}', grads_norms.mean(), self.current_epoch)
 
                 self.writer.flush()
 

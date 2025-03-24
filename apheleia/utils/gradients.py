@@ -9,5 +9,6 @@ def calc_jacobian_norm(output, inputs):
 
 def calc_net_gradient_norm(network):
     gradients = [v.grad for k, v in network.named_parameters() if v.grad is not None]
-    norms = torch.stack([g.flatten().norm(2) for g in gradients]).detach()
-    return norms.cpu().numpy()
+    if len(gradients) > 0:
+        norms = torch.stack([g.flatten().norm(2) for g in gradients]).detach()
+        return norms.cpu().numpy()
