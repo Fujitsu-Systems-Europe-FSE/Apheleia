@@ -26,13 +26,22 @@ class MetricStore(metaclass=ABCMeta):
         self.target = metric
 
     def add_train_metric(self, name, metric: Meter):
-        self.train[name] = [metric]
+        if name in self.train:
+            self.train[name].append(metric)
+        else:
+            self.train[name] = [metric]
 
     def add_val_metric(self, name, metric: Meter):
-        self.validation[name] = [metric]
+        if name in self.validation:
+            self.validation[name].append(metric)
+        else:
+            self.validation[name] = [metric]
 
     def add_test_metric(self, name, metric: Meter):
-        self.test[name] = [metric]
+        if name in self.test:
+            self.test[name].append(metric)
+        else:
+            self.test[name] = [metric]
 
     def flush(self, epoch):
         for d in [self.train, self.validation, self.test]:
@@ -61,20 +70,22 @@ class MetricStore(metaclass=ABCMeta):
         stdout = []
         for k, meters in metrics.items():
             main_tag = f'{category_name}/{k}'
-            val = meters[0].get()
-            if meters[0].count == 0 or math.isnan(val):
-                continue
-
-            stdout.append(f'\t\t{k} = {val:.6f}')
-            if type(self.sink) == SummaryWriter:
-                self.sink.add_scalar(main_tag, val, epoch)
-                self.sink.flush()
             # Multi plots not working with WANDB
-            # if len(meters) > 1:
-            #     tag_scalar_dict = self._meters_to_dict(meters)
-            #     if type(self.sink) == SummaryWriter:
-            #         self.sink.add_scalars(main_tag, tag_scalar_dict, epoch)
-            #         self.sink.flush()
+            if len(meters) > 1:
+                val = self._meters_to_dict(meters)
+                str_val = ', '.join([f'{k}:{v:.6f}' for k, v in val.items()])
+            else:
+                val = meters[0].get()
+                str_val = f'{val:.6f}'
+                if meters[0].count == 0 or math.isnan(val):
+                    continue
+
+            stdout.append(f'\t\t{k} = {str_val}')
+            if type(self.sink) == SummaryWriter:
+                if isinstance(val, dict):
+                    self.sink.add_scalars(main_tag, val, epoch)
+                else:
+                    self.sink.add_scalar(main_tag, val, epoch)
 
         self.sink.flush()
         if len(stdout) > 0:
