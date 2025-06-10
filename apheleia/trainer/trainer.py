@@ -205,13 +205,14 @@ class Trainer(ABC):
                 self.writer.add_scalar(f'{scheduler_name}-learning_rate', self._optimizer[scheduler_name].param_groups[0]['lr'], self.global_iter - 1)
 
     def _export_model(self):
-        try:
-            networks = self._net.get_all_raw()
-            for net in networks:
+        networks = self._net.get_all_raw()
+        for net in networks:
+            try:
                 net_jit = torch.jit.script(net)
                 net_jit.save(os.path.join(self._outdir, '{}-{:04d}.pt'.format(f'{self._opts.arch}-{net.model_name()}', self.current_epoch)))
-        except Exception as e:
-            ProjectLogger().error(f'Model export failed : {e}')
+            except Exception as e:
+                class_name = net.__class__.__name__
+                ProjectLogger().error(f'Model ({class_name}) export failed : {e}')
 
     def do_interrupt_backup(self):
         out_filename = os.path.join(self._outchkpts, '{}-{:04d}.bak'.format(self._opts.arch, self.current_epoch))
