@@ -18,7 +18,8 @@ class NeuralNet(ABC, nn.Module):
         try:
             _ = torch.jit.script(self)
         except Exception as e:
-            ProjectLogger().warning(f'Please correct model structure, it cannot be exported in torchscript format {e}')
+            class_name = self.__class__.__name__
+            ProjectLogger().warning(f'Please correct model ({class_name}) structure, it cannot be exported in torchscript format {e}')
 
     def get_grads_stats(self):
         norms = calc_net_gradient_norm(self)
