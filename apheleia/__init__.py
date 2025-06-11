@@ -17,7 +17,7 @@ def init_infer(args, ctx, model_name=None):
         model = torch.jit.load(Path(args.models).expanduser(), map_location=ctx[0])
         model.eval()
         return model
-    except Exception:
+    except Exception as e:
         if args.arch is None:
             raise Exception('Model architecture must be given when loading a checkpoint. Use --arch option.')
 
