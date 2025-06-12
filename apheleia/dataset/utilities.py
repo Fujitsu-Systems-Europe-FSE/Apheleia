@@ -82,7 +82,7 @@ def load_values(values_file):
 
 
 def save_values(outdir, values_dict):
-    values_dump = Path(outdir).expanduser() / 'dataset_values.json'
+    values_dump = Path(outdir).expanduser() / 'preprocessor_values.json'
     save_json(values_dump, values_dict)
 
 
@@ -94,6 +94,7 @@ def save_json(outfile, values):
 def save_preprocessors(outdir, preprocessors):
     path = Path(outdir).expanduser() / 'preprocessor.pkl'
     dump(preprocessors, open(path, 'wb'))
+    save_values(outdir, preprocessors.__dict__)
 
 
 def load_preprocessors(preproc_file):
