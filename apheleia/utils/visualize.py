@@ -74,7 +74,10 @@ def tensors_to_hist1d(writer, tensors, epoch, channels_names, tensors_name=None,
         if idx < len(channels_names):
             # dists = [t[:, i] for t in tensors]
             for j, t in enumerate(tensors):
-                ax.hist(t[:, idx], bins=100, density=True, alpha=(.4 if j > 0 else .7), label=tensors_name[j])
+                plot_opts = dict(bins=100, density=True, alpha=(.4 if j > 0 else .7))
+                if tensors_name is not None:
+                    plot_opts['label'] = tensors_name[j]
+                ax.hist(t[:, idx], **plot_opts)
             ax.set_title(channels_names[idx])
 
     fig, axes = plt.subplots(nrows, ncols, figsize=(12.8, 7.2))
