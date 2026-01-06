@@ -1,6 +1,7 @@
 from typing import List
 
 import math
+import torch
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -62,7 +63,7 @@ def tensors_to_densities(writer, tag, tensors, epoch, channels_names, tensors_na
     writer.add_image(tag, graph.transpose((2, 0, 1)), epoch)
     writer.flush()
 
-def tensors_to_hist1d(writer, tensors, epoch, channels_names, tensors_name=None, feats_subset_size=-1):
+def tensors_to_hist1d(writer, tensors, epoch, channels_names, tensors_name=None, feats_subset_size=-1, tag='dist/histograms'):
     tensors = prepare_tensors(tensors)
     tensors, channels_names = reduce_feats(feats_subset_size, tensors, channels_names)
 
@@ -91,14 +92,15 @@ def tensors_to_hist1d(writer, tensors, epoch, channels_names, tensors_name=None,
     fig.legend(handles, labels, loc='upper center')
     fig.tight_layout()
     graph = fig_as_numpy(fig)
-    writer.add_image('dist/histograms', graph.transpose((2, 0, 1)), epoch)
+    writer.add_image(tag, graph.transpose((2, 0, 1)), epoch)
     writer.flush()
 
 def prepare_tensors(tensors):
     tensors = list(tensors)
     for i, t in enumerate(tensors):
-        tensors[i] = t.squeeze().cpu().numpy() if t.ndim == 3 else t.cpu().numpy()
-
+        tensors[i] = t.squeeze() if t.ndim == 3 else t
+        if isinstance(tensors[i], torch.Tensor):
+            tensors[i] = tensors[i].cpu().numpy()
     return tensors
 
 def reduce_feats(subset_size, tensors, channels_names):

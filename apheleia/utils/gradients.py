@@ -10,5 +10,19 @@ def calc_jacobian_norm(output, inputs):
 def calc_net_gradient_norm(network):
     gradients = [v.grad for k, v in network.named_parameters() if v.grad is not None]
     if len(gradients) > 0:
-        norms = torch.stack([g.flatten().norm(2) for g in gradients]).detach()
-        return norms.cpu().numpy()
+        with torch.no_grad():
+            norms = torch.stack([g.norm(2) for g in gradients])
+        return norms.norm(2)
+    return None
+
+
+def calc_net_gradient_norm_per_loss(loss, network):
+    """
+    Calcule ‖∇_θ loss‖₂ pour tous les paramètres entraînables du `model`.
+    Ne modifie pas .grad, car on n’utilise pas .backward().
+    """
+    params = [p for p in network.parameters() if p.requires_grad]
+    grads = torch.autograd.grad(loss, params, retain_graph=True, create_graph=False, allow_unused=True)
+    grads = [g for g in grads if g is not None]
+    norms = torch.stack([g.norm(2) for g in grads])
+    return torch.norm(norms, 2), norms

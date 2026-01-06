@@ -92,6 +92,11 @@ class Trainer(ABC):
         return time.time() - self._start_time
 
     def start(self, train_data, val_data, test_data):
+        # Saving dataloaders reference for later use
+        self._train_data = train_data
+        self._val_data = val_data
+        self._test_data = test_data
+
         self.num_iter = len(train_data)
         self._t_tick()
 
@@ -309,9 +314,9 @@ class Trainer(ABC):
         if self._stats_interval > 0 and self.current_epoch % self._stats_interval == 0 and self.global_iter % self.num_iter == 0:
             if self.writer is not ...:
                 for k in self._net.keys():
-                    grads_norms = self._net.get_raw(k).get_grads_stats()
-                    if grads_norms is not None:
-                        self.writer.add_scalar(f'GradsNorms/{k}', grads_norms.mean(), self.current_epoch)
+                    grads_norm = self._net.get_raw(k).get_grads_stats()
+                    if grads_norm is not None:
+                        self.writer.add_scalar(f'GradsNorms/{k}', grads_norm, self.current_epoch)
 
                 self.writer.flush()
 
