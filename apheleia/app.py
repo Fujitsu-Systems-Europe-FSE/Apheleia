@@ -56,7 +56,7 @@ class App(metaclass=Singleton):
                     ProjectLogger().error('Daemon already running.')
                     exit(1)
 
-                daemon = Daemon(worker=partial(self._mainloop, args), pid_file=pid_file)
+                daemon = Daemon(worker=partial(self._mainloop, args), pid_file=pid_file, work_dir=os.getcwd())
                 daemon.do_action('start')
             else:
                 self._mainloop(args)
