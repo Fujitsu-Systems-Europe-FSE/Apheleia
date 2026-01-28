@@ -116,8 +116,8 @@ def reduce_feats(subset_size, tensors, channels_names):
 def fig_as_numpy(fig):
     fig.canvas.draw()
 
-    graph = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8)
-    graph = graph.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+    graph = np.fromstring(fig.canvas.tostring_argb(), dtype=np.uint8)
+    graph = graph.reshape(fig.canvas.get_width_height()[::-1] + (4,))
 
     plt.close(fig)
-    return graph
+    return graph[:, :, 1:]
