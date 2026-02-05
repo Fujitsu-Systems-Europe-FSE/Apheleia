@@ -31,10 +31,9 @@ def seed(args):
         args.seed = torch.initial_seed()
 
     random.seed(args.seed)
-    try:
-        # NumPy cannot be properly seeded. Expecting values coded on 2**32 - 1 bits, but Torch seed is bigger. Please avoid random ops in numpy.
-        np.random.seed(args.seed)
-    except Exception:
-        ProjectLogger().warning(f'NumPy cannot be seeded. Seed value does not fit on 32 bits.')
+    # torch 2^64 seed is too high for numpy 2^32 - 1. So we are folding seed in a deterministic way
+    MAX_SEED = 2 ** 32 - 1
+    safe_seed = int(args.seed) % MAX_SEED
+    np.random.seed(safe_seed)
 
     ProjectLogger().info(f'torch seed initialized to {args.seed}')
